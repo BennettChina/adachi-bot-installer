@@ -1,66 +1,142 @@
 #!/bin/bash
 set -e
 
+if [ "$(uname)" != 'Linux' ]; then echo '不支持的操作系统!'; fi
+
 if [ $EUID -ne 0 ]; then
-	echo "Please run as root."
+	echo "请使用root账号运行该脚本！"
 	exit
 fi
 
 echo "the script will do:
-1. install docker and docker-compose.(skip when installed)
-2. download SilveryStar/Adachi-BOT.
+1. install docker and docker-compose and git.(skip when installed)
+2. use git clone SilveryStar/Adachi-BOT.
 3. create configuration files.
 4. run adachi-bot and redis in docker.
 "
 
 if [ -x "$(command -v docker)" ]; then
-	echo "docker has installed, skip."
+	echo "docker已经安装，跳过！"
 else
-	echo "installing docker..."
-	curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun
+	echo "安装docker中..."
+	wget https://get.docker.com -O - | bash -s docker --mirror Aliyun
 	mkdir -p /etc/docker && touch /etc/docker/daemon.json
 	echo '{
   "registry-mirrors" : [
     "https://ajxzc7hl.mirror.aliyuncs.com",
     "https://registry.docker-cn.com",
     "http://docker.mirrors.ustc.edu.cn",
-    "http://hub-mirror.c.163.com"
+    "http://hub-mirror.c.163.com",
+    "https://mirror.ccs.tencentyun.com"
   ],
   "debug" : true,
   "experimental" : true
 }' > /etc/docker/daemon.json
 	systemctl start docker
-	echo "install docker success"
+	echo "安装docker成功！"
 fi
 
 if [ -x "$(command -v docker-compose)" ]; then
-	echo "docker-compose has installed, skip."
+	echo "docker-compose已经安装, 跳过!"
 else
-	echo "installing docker-compose..."
-	curl -L "https://github.com/docker/compose/releases/download/v2.3.0/docker-compose-$(uname -s)-$(uname -m)" -o "/usr/local/bin/docker-compose"
-	if [ ! -f "/usr/local/bin/docker-compose" -o $(ls -l docker-compose | awk '{print $5}') -lt 10000000 ]; then
+	echo "安装docker-compose中..."
+	wget "https://ghproxy.com/https://github.com/docker/compose/releases/download/v2.3.0/docker-compose-$(uname -s)-$(uname -m)" -O "/usr/local/bin/docker-compose"
+	if [ ! -f "/usr/local/bin/docker-compose" ] || [ "$(ls -l /usr/local/bin/docker-compose | awk '{print $5}')" -lt 10000000 ]; then
 		# 尝试从daocloud镜像源再次下载
-		echo "download github docker-compose faild, will retry from daocloud.io"
-		curl -L 'https://get.daocloud.io/docker/compose/releases/download/v2.3.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose'
+		echo "从github下载docker-compose失败，将从镜像地址重试。"
+		wget "https://get.daocloud.io/docker/compose/releases/download/v2.3.0/docker-compose-$(uname -s)-$(uname -m)" -O "/usr/local/bin/docker-compose"
 	fi
 	chmod +x /usr/local/bin/docker-compose
 	ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 fi
 
-echo "downloading adachi-bot..."
+os=$(cat /etc/*release | grep ^NAME | tr -d 'NAME="')
 
+if [ -x "$(command -v git)" ]; then
+	echo "git已经安装，跳过!"
+else
+	echo "安装git中..."
+	if [ -x "$(command -v yum)" ]; then
+	  yum install -y git
+	elif [ -x "$(command -v apt-get)" ] && [ "$os" == 'Ubuntu' ]; then
+	  add-apt-repository -y ppa:git-core/ppa
+	  apt update
+	  apt install -y git
+	elif [ -x "$(command -v apt-get)" ]; then
+	  apt-get install -y git
+	elif [ -x "$(command -v pkg)" ] && [ "$os" == 'FreeBSD' ]; then
+	  if [ ! -f "/usr/local/etc/pkg/repos/FreeBSD.conf" ]; then
+	      # 添加镜像加速
+	      mkdir -p "/usr/local/etc/pkg/repos"
+	      echo 'FreeBSD: {
+                url: "pkg+http://mirrors.ustc.edu.cn/freebsd-pkg/${ABI}/quarterly",
+              }' > "/usr/local/etc/pkg/repos/FreeBSD.conf"
+	  fi
+	  pkg install -y git
+	elif [ -x "$(command -v dnf)" ]; then
+	  dnf install -y git
+	elif [ -x "$(command -v pacman)" ]; then
+	  pacman -S git
+	elif [ -x "$(command -v emerge)" ]; then
+	  emerge --verbose dev-vcs/git
+	elif [ -x "$(command -v zypper)" ]; then
+	  zypper install git
+	elif [ -x "$(command -v urpmi)" ]; then
+	  urpmi git
+	elif [ -x "$(command -v nix-env)" ]; then
+	  nix-env -i git
+	elif [ -x "$(command -v pkgutil)" ]; then
+	  pkgutil -i git
+	elif [ -x "$(command -v pkg)" ]; then
+	  pkg install -y developer/versioning/git
+	elif [ "$(command -v pkg_add)" ]; then
+	  pkg_add -y git
+	elif [ -x "$(command -v apk)" ]; then
+	  apk add -y git
+	else
+	  echo "不支持到系统，请自行安装git。"
+	fi
+	echo "安装git成功"
+fi
+
+echo "开始使用git拉取adachi-bot..."
 work_dir=$(pwd)
-curl -O 'https://ghproxy.com/https://github.com/SilveryStar/Adachi-BOT/archive/refs/heads/master.zip'
-unzip -q -o master.zip
-rm -rf ${work_dir}/Adachi-BOT
-mv ${work_dir}/Adachi-BOT-master ${work_dir}/Adachi-BOT 
-rm -rf ${work_dir}/master.zip
-ls "${work_dir}/Adachi-BOT" > /dev/null 2>&1
-if [ $? -ne 0 ]; then echo "download adachi-bot faild."; exit; fi
-echo "download adachi-bot success."
+if [ -d "${work_dir}/Adachi-BOT" ]; then
+    echo "adachi-bot已经存在，将在当前文件夹做备份."
+    mv "Adachi-BOT" "Adachi-BOT-backup-$(date +%Y-%m-%d_%T)"
+fi
+git clone https://ghproxy.com/https://github.com/SilveryStar/Adachi-BOT.git
+echo "adachi-bot拉取成功."
 
+echo "开始选择安装插件，回复编号选择(回复0结束选择)..."
+cd "Adachi-BOT/src/plugins"
+use_plugins=""
+select plugin in "音乐插件" "抽卡分析" "圣遗物评分"; do
+  case $plugin in
+    "音乐插件")
+      git clone -b music https://ghproxy.com/https://github.com/SilveryStar/Adachi-Plugin.git music
+      use_plugins="${use_plugins} ""[音乐插件]"
+      echo "音乐插件已下载，使用方式请访问 https://github.com/SilveryStar/Adachi-Plugin/tree/music"
+    ;;
+    "抽卡分析")
+      git clone https://ghproxy.com/https://github.com/wickedll/genshin_draw_analysis.git
+      use_plugins="${use_plugins}"" [抽卡分析插件]"
+      echo "抽卡分析插件已下载，使用方式请访问 https://github.com/wickedll/genshin_draw_analysis"
+    ;;
+    "圣遗物评分")
+      git clone https://ghproxy.com/https://github.com/wickedll/genshin_rating.git
+      use_plugins="${use_plugins} "" [圣遗物评分插件]"
+      echo "抽卡分析插件已下载，使用方式请访问 https://github.com/wickedll/genshin_rating"
+    ;;
+    *)
+      echo "插件选择结束，你选择了${use_plugins}"
+      break
+    ;;
+  esac
+done
+cd "${work_dir}"
 
-echo "create configuration files begin..."
+echo "开始创建配置文件..."
 if [ ! -d "${work_dir}/Adachi-BOT/config" ]; then mkdir -p ${work_dir}/Adachi-BOT/config; fi
 cd  ${work_dir}/Adachi-BOT/config && touch setting.yml commands.yml cookies.yml genshin.yml && cd ${work_dir}
 
@@ -190,16 +266,16 @@ services:
       - ./package.json:/bot/package.json
 "  >  ${work_dir}/Adachi-BOT/docker-compose.yml
 
-echo "bot and redis run beginning..."
+echo "开始运行BOT..."
 cd Adachi-BOT && docker-compose up -d --build
-echo "bot and redis running..."
+echo "BOT正在运行中,请稍等..."
 
-if [ $qrcode == "true" ]; then
-	log_file=${work_dir}/Adachi-BOT/logs/bot.$(date +%Y-%m-%d).log
-	
-	#一直循环直到log文件已经创建
-	while [ ! -f ${log_file} ]; do sleep 10s; done
-	
-	echo "扫码登录后使用CTRL+C组合键即可结束日志查看."
-	tail -100f "${work_dir}/Adachi-BOT/logs/bot.$(date +%Y-%m-%d).log"
-fi
+log_file=${work_dir}/Adachi-BOT/logs/bot.$(date +%Y-%m-%d).log
+
+#一直循环直到log文件已经创建
+while [ ! -f ${log_file} ]; do sleep 10s; done
+
+echo "\t<============================服务已启动============================>\n-) webconsole端口优化为8848，setting中使用了默认配置。\n-) 可在Adachi-BOT目录中使用docker-compose down关闭服务，docker-compose up -d启动服务。\n-) 可根据官方文档https://docs.adachi.top/config/#setting-yml重新设置你的配置，使用的指令可根据#help指令的结果对照在command.yml中修改。\n\t<======================以下是BOT服务的日志内容======================>"
+
+echo "使用CTRL+C组合键即可结束日志查看."
+tail -100f "${work_dir}/Adachi-BOT/logs/bot.$(date +%Y-%m-%d).log"
