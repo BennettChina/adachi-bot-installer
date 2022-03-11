@@ -257,6 +257,7 @@ COPY . /bot
 
 CMD nohup sh -c \"cnpm install && npm start\"
 " > ${work_dir}/Adachi-BOT/Dockerfile
+fi
 
 #优化docker-compose.yml
 echo "version: \"3.7\"
