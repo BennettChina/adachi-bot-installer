@@ -228,7 +228,7 @@ serverPort: 58612
 "  >  ${work_dir}/Adachi-BOT/config/genshin.yml
 
 #优化Dockerfile
-if [ "${use_analysis_plugin}" = true ]; then
+if [ "${use_analysis_plugin}" != true ]; then
 
 	echo "FROM silverystar/centos-puppeteer-env
 
