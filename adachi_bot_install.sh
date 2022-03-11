@@ -121,6 +121,10 @@ select plugin in "音乐插件" "抽卡分析" "圣遗物评分"; do
     "抽卡分析")
       git clone https://ghproxy.com/https://github.com/wickedll/genshin_draw_analysis.git
       use_plugins="${use_plugins}"" [抽卡分析插件]"
+      # 下载插件需要的中文字体,此处使用小米的MiSans-Light字体
+	  mkdir -p "${work_dir}/Adachi-BOT/font"
+	  wget "https://cdn.jsdelivr.net/gh/BennettChina/adachi-bot-installer@main/resource/MiSans-Light.ttf" -O "${work_dir}/Adachi-BOT/font/MiSans-Light.ttf"
+	  use_analysis_plugin=true
       echo "抽卡分析插件已下载，使用方式请访问 https://github.com/wickedll/genshin_draw_analysis"
     ;;
     "圣遗物评分")
@@ -224,7 +228,9 @@ serverPort: 58612
 "  >  ${work_dir}/Adachi-BOT/config/genshin.yml
 
 #优化Dockerfile
-echo "FROM silverystar/centos-puppeteer-env
+if [ "${use_analysis_plugin}" = true ]; then
+
+	echo "FROM silverystar/centos-puppeteer-env
 
 ENV LANG en_US.utf8
 RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
@@ -234,6 +240,23 @@ COPY . /bot
 
 CMD nohup sh -c \"cnpm install && npm start\"
 "  >  ${work_dir}/Adachi-BOT/Dockerfile
+else
+	echo "FROM silverystar/centos-puppeteer-env
+
+#设置容器内的字符集,处理header为中文时乱码问题
+ENV LANG en_US.utf8
+#设置时区、创建字体文件夹
+RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && mkdir -p /usr/share/fonts/chinese && chmod -R 755 /usr/share/fonts/chinese
+#将字体拷贝到容器内(字体文件名可修改为你使用的字体)
+COPY font/MiSans-Light.ttf /usr/share/fonts/chinese
+#扫描字体并进行索引
+RUN cd /usr/share/fonts/chinese && mkfontscale
+
+WORKDIR /bot
+COPY . /bot
+
+CMD nohup sh -c \"cnpm install && npm start\"
+" > ${work_dir}/Adachi-BOT/Dockerfile
 
 #优化docker-compose.yml
 echo "version: \"3.7\"
