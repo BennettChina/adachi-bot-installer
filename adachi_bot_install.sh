@@ -105,7 +105,7 @@ if [ -d "${work_dir}/Adachi-BOT" ]; then
     echo "adachi-bot已经存在，将在当前文件夹做备份."
     mv "Adachi-BOT" "Adachi-BOT-backup-$(date +%Y-%m-%d_%T)"
 fi
-git clone https://ghproxy.com/https://github.com/SilveryStar/Adachi-BOT.git
+git clone https://ghproxy.com/https://github.com/SilveryStar/Adachi-BOT.git --depth=1
 echo "adachi-bot拉取成功."
 
 echo "开始选择安装插件，回复编号选择(回复0结束选择)..."
@@ -114,12 +114,12 @@ use_plugins=""
 select plugin in "音乐插件" "抽卡分析" "圣遗物评分"; do
   case $plugin in
     "音乐插件")
-      git clone -b music https://ghproxy.com/https://github.com/SilveryStar/Adachi-Plugin.git music
+      git clone -b music https://ghproxy.com/https://github.com/SilveryStar/Adachi-Plugin.git --depth=1 music
       use_plugins="${use_plugins} ""[音乐插件]"
       echo "音乐插件已下载，使用方式请访问 https://github.com/SilveryStar/Adachi-Plugin/tree/music"
     ;;
     "抽卡分析")
-      git clone https://ghproxy.com/https://github.com/wickedll/genshin_draw_analysis.git
+      git clone https://ghproxy.com/https://github.com/wickedll/genshin_draw_analysis.git --depth=1
       use_plugins="${use_plugins}"" [抽卡分析插件]"
       # 下载插件需要的中文字体,此处使用小米的MiSans-Light字体
 	  mkdir -p "${work_dir}/Adachi-BOT/font"
@@ -128,7 +128,7 @@ select plugin in "音乐插件" "抽卡分析" "圣遗物评分"; do
       echo "抽卡分析插件已下载，使用方式请访问 https://github.com/wickedll/genshin_draw_analysis"
     ;;
     "圣遗物评分")
-      git clone https://ghproxy.com/https://github.com/wickedll/genshin_rating.git
+      git clone https://ghproxy.com/https://github.com/wickedll/genshin_rating.git --depth=1
       use_plugins="${use_plugins} "" [圣遗物评分插件]"
       echo "抽卡分析插件已下载，使用方式请访问 https://github.com/wickedll/genshin_rating"
     ;;
