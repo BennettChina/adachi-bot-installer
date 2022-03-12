@@ -1,9 +1,9 @@
 # adachi-bot-installer
 [SilveryStar/Adachi-BOT](https://github.com/SilveryStar/Adachi-BOT)的一键部署脚本
 
-## Linux
+## Linux/macOS
 
-`Linux`环境可以直接执行下面的命令，将通过安装`Docker`、`docker-compose`的方式运行BOT。
+`Linux`环境可以直接执行下面的命令，将通过安装`Docker`、`docker-compose`的方式运行BOT，`macOS`需要自行安装`docker`(最好是比较新的版本，因为自带了`docker-compose`)，[docker下载地址](https://www.docker.com/get-started) 。
 
 ```sh
 wget https://cdn.jsdelivr.net/gh/BennettChina/adachi-bot-installer@main/adachi_bot_install.sh -O adachi_bot_install.sh && sudo bash adachi_bot_install.sh && rm adachi_bot_install.sh

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-if [ "$(uname)" != 'Linux' ]; then echo '不支持的操作系统!'; fi
+if [ "$(uname)" != 'Linux' ] && [ "$(uname)" != 'Darwin' ]; then echo '不支持的操作系统!'; fi
 
 if [ $EUID -ne 0 ]; then
 	echo "请使用root账号运行该脚本！"
@@ -17,6 +17,9 @@ echo "the script will do:
 
 if [ -x "$(command -v docker)" ]; then
 	echo "docker已经安装，跳过！"
+elif [ "$(uname)" == 'Darwin' ]; then
+  echo "请自行安装docker后再使用该脚本, docker下载地址: https://www.docker.com/get-started"
+  exit 1
 else
 	echo "安装docker中..."
 	wget https://get.docker.com -O - | bash -s docker --mirror Aliyun
@@ -40,17 +43,25 @@ if [ -x "$(command -v docker-compose)" ]; then
 	echo "docker-compose已经安装, 跳过!"
 else
 	echo "安装docker-compose中..."
-	wget "https://ghproxy.com/https://github.com/docker/compose/releases/download/v2.3.0/docker-compose-$(uname -s)-$(uname -m)" -O "/usr/local/bin/docker-compose"
+	if [ "$(uname)" == 'Darwin' ]; then
+	  curl -L "https://ghproxy.com/https://github.com/docker/compose/releases/download/v2.3.0/docker-compose-$(uname -s)-$(uname -m)" -o "/usr/local/bin/docker-compose"
+	else
+	  wget "https://ghproxy.com/https://github.com/docker/compose/releases/download/v2.3.0/docker-compose-$(uname -s)-$(uname -m)" -O "/usr/local/bin/docker-compose"
+	fi
 	if [ ! -f "/usr/local/bin/docker-compose" ] || [ "$(ls -l /usr/local/bin/docker-compose | awk '{print $5}')" -lt 10000000 ]; then
 		# 尝试从daocloud镜像源再次下载
 		echo "从github下载docker-compose失败，将从镜像地址重试。"
-		wget "https://get.daocloud.io/docker/compose/releases/download/v2.3.0/docker-compose-$(uname -s)-$(uname -m)" -O "/usr/local/bin/docker-compose"
+		if [ "$(uname)" == 'Darwin' ]; then
+		  curl -L "https://get.daocloud.io/docker/compose/releases/download/v2.3.0/docker-compose-$(uname -s)-$(uname -m)" -o "/usr/local/bin/docker-compose"
+		else
+		  wget "https://get.daocloud.io/docker/compose/releases/download/v2.3.0/docker-compose-$(uname -s)-$(uname -m)" -O "/usr/local/bin/docker-compose"
+		fi
 	fi
 	chmod +x /usr/local/bin/docker-compose
 	ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 fi
 
-os=$(cat /etc/*release | grep ^NAME | tr -d 'NAME="')
+os=$(cat /etc/*release | grep ^NAME | tr -d 'NAME="') > /dev/null 2>&1
 
 if [ -x "$(command -v git)" ]; then
 	echo "git已经安装，跳过!"
@@ -122,9 +133,14 @@ select plugin in "音乐插件" "抽卡分析" "圣遗物评分"; do
       git clone https://ghproxy.com/https://github.com/wickedll/genshin_draw_analysis.git --depth=1
       use_plugins="${use_plugins}"" [抽卡分析插件]"
       # 下载插件需要的中文字体,此处使用小米的MiSans-Light字体
-	  mkdir -p "${work_dir}/Adachi-BOT/font"
-	  wget "https://cdn.jsdelivr.net/gh/BennettChina/adachi-bot-installer@main/resource/MiSans-Light.ttf" -O "${work_dir}/Adachi-BOT/font/MiSans-Light.ttf"
-	  use_analysis_plugin=true
+      mkdir -p "${work_dir}/Adachi-BOT/font"
+      echo "开始下载插件需要的中文字体..."
+      if [ "$(uname)" == 'Darwin' ]; then
+        curl -L "https://source.hibennett.cn/MiSans-Light.ttf" -o "${work_dir}/Adachi-BOT/font/MiSans-Light.ttf"
+      else
+        wget "https://source.hibennett.cn/MiSans-Light.ttf" -O "${work_dir}/Adachi-BOT/font/MiSans-Light.ttf"
+      fi
+      use_analysis_plugin=true
       echo "抽卡分析插件已下载，使用方式请访问 https://github.com/wickedll/genshin_draw_analysis"
     ;;
     "圣遗物评分")
