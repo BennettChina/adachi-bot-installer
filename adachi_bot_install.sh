@@ -208,7 +208,11 @@ javascript:(function () {let domain = document.domain;let cookie = document.cook
 '
 read -p "请输入一个米游社cookie: " mys_cookie
 
-jwt_secret="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1)"
+if [ "$(uname)" == 'Darwin' ]; then
+  jwt_secret=$(LC_ALL=C tr -dc "[:alnum:]" < /dev/urandom | head -c 16)
+else
+  jwt_secret="$(tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w 16 | head -n 1)"
+fi
 echo "${jwt_secret}"
 
 echo "qrcode: ${qrcode}
