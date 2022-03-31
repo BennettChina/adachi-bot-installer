@@ -184,7 +184,10 @@ if ($install_node)
     Write-Output "node 安装成功."
 
     # set npm mirror
-    npm config set registry http://registry.npm.taobao.org
+    if ($source_cn)
+    {
+        npm config set registry https://registry.npmmirror.com
+    }
 }
 if ($install_git)
 {
