@@ -337,10 +337,12 @@ while($loop) {
         1 {
             $qq_password = Read-Host "请输入机器人的QQ密码" -MaskInput
             $qr_code = $false
+            $npm_param = "start"
         }
         2 {
             $qr_code = $true
             $qq_password = "`"`""
+            $npm_param = "run login"
         }
         Default {
             Write-Output "你输入的编号非法,请重新输入!"
@@ -363,7 +365,7 @@ if(!($run_with_docker))
 }
 
 
-New-Item -Path .\config\setting.yml -ItemType File -Force -Value "qrcode: ${qrcode}
+New-Item -Path .\config\setting.yml -ItemType File -Force -Value "qrcode: ${qr_code}
 number: ${qq_num}
 password: ${qq_password}
 master: ${master_num}
@@ -410,7 +412,7 @@ RUN cd /usr/share/fonts/chinese && mkfontscale
 WORKDIR /bot
 COPY . /bot
 
-CMD nohup sh -c `"cnpm install && npm start`""
+CMD nohup sh -c `"cnpm install && npm ${npm_param}`""
     }
     else
     {
@@ -422,7 +424,7 @@ RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 WORKDIR /bot
 COPY . /bot
 
-CMD nohup sh -c `"cnpm install && npm start`""
+CMD nohup sh -c `"cnpm install && npm ${npm_param}`""
     }
 
     New-Item -Path .\docker-compose.yml -ItemType File -Force -Value "version: `"3.7`"
@@ -459,14 +461,37 @@ services:
 if ($run_with_docker)
 {
     # 编译镜像并启动
-    docker build -t adachi-bot:latest
+    docker build -t adachi-bot:latest .
     docker network create adachi-net
+    New-Item -Path .\bot-start.bat -ItemType File -Force -Value "docker build -t adachi-bot:latest . && docker run -d --name adachi-bot --restart=always --network=adachi-net -p 80:80 -e docker=yes -v ${work_dir}\config:/bot/config -v ${work_dir}\logs:/bot/logs -v ${work_dir}\src:/bot/src -v ${work_dir}\package.json:/bot/package.json -v ${work_dir}\data:/bot/data adachi-bot:latest"
     docker run -d --name adachi-redis --restart=always --network=adachi-net -e TZ=Asia/Shanghai -v ${work_dir}+"\redis.conf":/etc/redis/redis.conf -v ${work_dir} + "\database":/data redis:6.2.3 redis-server /etc/redis/redis.conf
-    docker run -d --name adachi-bot --restart=always --network=adachi-net -p 80:80 -e docker=yes -v ${work_dir} + "\config":/bot/config -v ${work_dir} + "\log":/bot/logs -v ${work_dir} + "\src":/bot/src -v ${work_dir} + "\package.json":/bot/package.json adachi-bot:latest
+    if ($qr_code)
+    {
+        Write-Output "ticket请输入到控制台后「回车」即可，账号登录成功后CTRL+C结束并手动运行./bot-start.bat"
+        # 更换启动方式(放在服务启动前面避免登录完成后脚本中断无法继续执行)
+        (Get-Content -Path .\Dockerfile) |
+            ForEach-Object {$_ -Replace 'run login', 'start'} |
+                Set-Content -Path .\Dockerfile
+        docker run --rm --name adachi-bot --network=adachi-net -p 80:80 -e docker=yes -v ${work_dir} + "\config":/bot/config -v ${work_dir} + "\log":/bot/logs -v ${work_dir} + "\src":/bot/src -v ${work_dir} + "\package.json":/bot/package.json -v ${work_dir} + "\data":/bot/data adachi-bot:latest
+        exit 0
+    }
+    docker run -d --name adachi-bot --restart=always --network=adachi-net -p 80:80 -e docker=yes -v "${work_dir}\config":/bot/config -v "${work_dir}\logs":/bot/logs -v "${work_dir}\src":/bot/src -v "${work_dir}\package.json":/bot/package.json -v "${work_dir}\data":/bot/data adachi-bot:latest
 }
 elseif ($run_with_docker_compose)
 {
-    docker-compose up -d --build
+    if ($qr_code)
+    {
+        # 扫码方式启动
+        Write-Output 'ticket请输入到控制台后「回车」即可，账号登录成功后CTRL+C结束并手动运行docker compose up -d --build'
+        docker compose build
+        # 更换启动方式(放在服务启动前面避免登录完成后脚本中断无法继续执行)
+        (Get-Content -Path .\Dockerfile) |
+            ForEach-Object {$_ -Replace 'run login', 'start'} |
+                Set-Content -Path .\Dockerfile
+        docker compose up --no-build
+        exit 0
+    }
+    docker compose up -d --build
 }
 else
 {

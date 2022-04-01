@@ -3,11 +3,6 @@ set -e
 
 if [ "$(uname)" != 'Linux' ] && [ "$(uname)" != 'Darwin' ]; then echo '不支持的操作系统!'; fi
 
-if [ $EUID -ne 0 ]; then
-	echo "请使用root账号运行该脚本！"
-	exit
-fi
-
 echo "the script will do:
 1. install docker and docker-compose and git.(skip when installed)
 2. use git clone SilveryStar/Adachi-BOT.
@@ -190,7 +185,7 @@ select platform_str in "安卓手机" "安卓Pad" "安卓手表" "MacOS" "iPad";
 	esac
 done
 read -p "请输入机器人的QQ号: " qq_num
-echo "请选择登录方式(扫码方式目前有问题,二维码发不出来):"
+echo "请选择登录方式:"
 select login_type in "密码" "扫码"; do
 	if [ $login_type == "密码" ]; then
 		 read -p "请输入机器人的密码: " qq_password
@@ -213,7 +208,6 @@ if [ "$(uname)" == 'Darwin' ]; then
 else
   jwt_secret="$(tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w 16 | head -n 1)"
 fi
-echo "${jwt_secret}"
 
 echo "qrcode: ${qrcode}
 number: ${qq_num}
@@ -234,18 +228,20 @@ webConsole:
   consolePort: 80
   tcpLoggerPort: 54921
   jwtSecret: ${jwt_secret}
-atBOT: false
-"  >  ${work_dir}/Adachi-BOT/config/setting.yml
+atBOT: false"  >  ${work_dir}/Adachi-BOT/config/setting.yml
 
 echo "cookies:
-  - ${mys_cookie}
-"  >  ${work_dir}/Adachi-BOT/config/cookies.yml
+  - ${mys_cookie}"  >  ${work_dir}/Adachi-BOT/config/cookies.yml
 
 
 echo "cardWeaponStyle: normal
 cardProfile: random
-serverPort: 58612
-"  >  ${work_dir}/Adachi-BOT/config/genshin.yml
+serverPort: 58612"  >  ${work_dir}/Adachi-BOT/config/genshin.yml
+
+npm_param="start"
+if [ "${qrcode}" == true ]; then
+  npm_param="run login"
+fi
 
 #优化Dockerfile
 if [ "${use_analysis_plugin}" != true ]; then
@@ -258,8 +254,7 @@ RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 WORKDIR /bot
 COPY . /bot
 
-CMD nohup sh -c \"cnpm install && npm start\"
-"  >  ${work_dir}/Adachi-BOT/Dockerfile
+CMD nohup sh -c \"cnpm install && npm ${npm_param}\""  >  ${work_dir}/Adachi-BOT/Dockerfile
 else
 	echo "FROM silverystar/centos-puppeteer-env
 
@@ -275,8 +270,7 @@ RUN cd /usr/share/fonts/chinese && mkfontscale
 WORKDIR /bot
 COPY . /bot
 
-CMD nohup sh -c \"cnpm install && npm start\"
-" > ${work_dir}/Adachi-BOT/Dockerfile
+CMD nohup sh -c \"cnpm install && npm ${npm_param}\"" > ${work_dir}/Adachi-BOT/Dockerfile
 fi
 
 #优化docker-compose.yml
@@ -297,7 +291,7 @@ services:
       context: .
     image: adachi-bot:latest
     ports:
-      - 8848:80
+      - 8849:80
     container_name: adachi-bot
     environment:
       docker: \"yes\"
@@ -307,11 +301,21 @@ services:
       - ./config:/bot/config
       - ./logs:/bot/logs
       - ./src:/bot/src
-      - ./package.json:/bot/package.json
-"  >  ${work_dir}/Adachi-BOT/docker-compose.yml
+      - ./package.json:/bot/package.json"  >  ${work_dir}/Adachi-BOT/docker-compose.yml
 
 echo "开始运行BOT..."
-cd Adachi-BOT && docker-compose up -d --build
+cd Adachi-BOT
+if [ "${qrcode}" != true ]; then
+  docker-compose up -d --build
+else
+  # 扫码方式启动
+  echo 'ticket请输入到控制台后「回车」即可，账号登录成功后CTRL+C结束并手动运行cd Adachi-BOT && docker-compose down && docker-compose up -d --build'
+  # 将登录替换启动
+  docker-compose build
+  sed -i '' 's/run login/start/' "${work_dir}/Adachi-BOT/Dockerfile"
+  docker-compose up --no-build
+  exit 0
+fi
 echo "BOT正在运行中,请稍等..."
 
 log_file=${work_dir}/Adachi-BOT/logs/bot.$(date +%Y-%m-%d).log
@@ -319,7 +323,7 @@ log_file=${work_dir}/Adachi-BOT/logs/bot.$(date +%Y-%m-%d).log
 #一直循环直到log文件已经创建
 while [ ! -f ${log_file} ]; do sleep 10s; done
 
-echo "\t<============================服务已启动============================>\n-) webconsole端口优化为8848，setting中使用了默认配置。\n-) 可在Adachi-BOT目录中使用docker-compose down关闭服务，docker-compose up -d启动服务。\n-) 可根据官方文档https://docs.adachi.top/config/#setting-yml重新设置你的配置，使用的指令可根据#help指令的结果对照在command.yml中修改。\n\t<======================以下是BOT服务的日志内容======================>"
+echo "\t<============================服务已启动============================>\n-) webconsole端口优化为8849，setting中使用了默认配置。\n-) 可在Adachi-BOT目录中使用docker-compose down关闭服务，docker-compose up -d启动服务。\n-) 可根据官方文档https://docs.adachi.top/config/#setting-yml重新设置你的配置，使用的指令可根据#help指令的结果对照在command.yml中修改。\n\t<======================以下是BOT服务的日志内容======================>"
 
 echo "使用CTRL+C组合键即可结束日志查看."
 tail -100f "${work_dir}/Adachi-BOT/logs/bot.$(date +%Y-%m-%d).log"
