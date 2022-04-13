@@ -312,7 +312,11 @@ else
   echo 'ticket请输入到控制台后「回车」即可，账号登录成功后CTRL+C结束并手动运行cd Adachi-BOT && docker-compose down && docker-compose up -d --build'
   # 将登录替换启动
   docker-compose build
-  sed -i '' 's/run login/start/' "${work_dir}/Adachi-BOT/Dockerfile"
+  if [ "$(uname)" == 'Darwin' ]; then
+    sed -i '' 's/run login/start/' "${work_dir}/Adachi-BOT/Dockerfile"
+  else
+    sed -i 's/run login/start/' "${work_dir}/Adachi-BOT/Dockerfile"
+  fi
   docker-compose up --no-build
   exit 0
 fi
