@@ -24,6 +24,33 @@ wget https://cdn.jsdelivr.net/gh/BennettChina/adachi-bot-installer@main/adachi_b
 iwr "https://cdn.jsdelivr.net/gh/BennettChina/adachi-bot-installer`@main/adachi_bot_install.ps1" -O .\adachi_bot_install.ps1; .\adachi_bot_install.ps1; rm .\adachi_bot_install.ps1
 ```
 
+## Android
+
+使用 `termux` [App](https://github.com/termux/termux-app) 来安装(可以通过 `F-Droid` 来[下载](https://f-droid.org/en/packages/com.termux/) 安装)，参考[云崽BOT](https://github.com/Le-niao/Yunzai-Bot) 的安卓安装方式。
+
+下载完 `termux` 后执行 `pkg install proot git python -y`
+
+使用[国光大佬](https://github.com/sqlsec/termux-install-linux) 提供的Linux系统安装脚本安装一个Linux系统（虽然 `termux` 自身就是Linux环境，但毕竟是模拟的，还是需要真正的Linux环境才能安装上BOT ）
+
+```shell
+git clone https://ghproxy.com/https://github.com/sqlsec/termux-install-linux
+cd termux-install-linux
+python termux-linux-install.py
+```
+
+安装后启动系统，比如 `Ubuntu` 的系统
+
+```shell
+cd ~/Termux-Linux/Ubuntu
+./start-ubuntu.sh
+```
+
+启动系统后再执行(目前只提供了 `Ubuntu` 的安装脚本)
+
+```shell
+wget https://cdn.jsdelivr.net/gh/BennettChina/adachi-bot-installer@main/termux-ubuntu.sh -O - | bash -
+```
+
 
 ## 感谢
 
@@ -31,3 +58,5 @@ iwr "https://cdn.jsdelivr.net/gh/BennettChina/adachi-bot-installer`@main/adachi_
 - 感谢[daocloud](https://get.daocloud.io/#install-compose)提供的镜像加速.
 - 感谢[GithubProxy](https://ghproxy.com/)提供的镜像加速.
 - 参考了[pcrbot/hoshino-installer](https://github.com/pcrbot/hoshino-installer)的脚本写法.
+- 感谢[Termux](https://github.com/termux/termux-app)提供的软件
+- 感谢[国光](https://github.com/sqlsec/termux-install-linux)大佬提供的Termux安装Linux系统脚本
