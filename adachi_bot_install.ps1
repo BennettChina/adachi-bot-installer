@@ -72,14 +72,12 @@ try
     }
     else
     {
-        Write-Output "未安装docker将使用forever方式启动服务"
-        $console_port = 8848
+        Write-Output "未安装docker将使用pm2方式启动服务"
     }
 }
 catch [System.Management.Automation.CommandNotFoundException]
 {
-    Write-Output "未安装docker将使用forever方式启动服务"
-    $console_port = 8848
+    Write-Output "未安装docker将使用pm2方式启动服务"
 }
 
 try
@@ -249,7 +247,7 @@ while ($loop)
     {
         1 {
             git clone -b music https://ghproxy.com/https://github.com/SilveryStar/Adachi-Plugin.git --depth=1 music
-            $use_plugins = "$use_plugins " + "[musid]"
+            $use_plugins = "$use_plugins " + "[music]"
             Write-Output "音乐插件已下载，使用方式请访问 https://github.com/SilveryStar/Adachi-Plugin/tree/music"
             Write-Output "您已选择 $use_plugins"
         }
@@ -337,7 +335,7 @@ while($loop) {
         1 {
             $qq_password = Read-Host "请输入机器人的QQ密码" -MaskInput
             $qr_code = $false
-            $npm_param = "start"
+            $npm_param = "run docker-start"
         }
         2 {
             $qr_code = $true
@@ -385,6 +383,7 @@ webConsole:
   tcpLoggerPort: ${logger_port}
   jwtSecret: ${jwt_secret}
 atBOT: false
+addFriend: false
 "
 
 New-Item -Path .\config\cookies.yml -ItemType File -Force -Value "cookies:
@@ -403,7 +402,7 @@ if ($run_with_docker -or $run_with_docker_compose)
 
 ENV LANG en_US.utf8
 
-RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && mkdir -p /usr/share/fonts/chinese && chmod -R 755 /usr/share/fonts/chinese
+RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && mkdir -p /usr/share/fonts/chinese && chmod -R 755 /usr/share/fonts/chinese && && yum install -y git
 
 COPY font/MiSans-Light.ttf /usr/share/fonts/chinese
 
@@ -419,7 +418,7 @@ CMD nohup sh -c `"cnpm install && npm ${npm_param}`""
         New-Item -Path .\Dockerfile -ItemType File -Force -Value "FROM silverystar/centos-puppeteer-env
 
 ENV LANG en_US.utf8
-RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && && yum install -y git
 
 WORKDIR /bot
 COPY . /bot
@@ -463,19 +462,19 @@ if ($run_with_docker)
     # 编译镜像并启动
     docker build -t adachi-bot:latest .
     docker network create adachi-net
-    New-Item -Path .\bot-start.bat -ItemType File -Force -Value "docker build -t adachi-bot:latest . && docker run -d --name adachi-bot --restart=always --network=adachi-net -p 80:80 -e docker=yes -v ${work_dir}\config:/bot/config -v ${work_dir}\logs:/bot/logs -v ${work_dir}\src:/bot/src -v ${work_dir}\package.json:/bot/package.json -v ${work_dir}\data:/bot/data adachi-bot:latest"
+    New-Item -Path .\bot-start.bat -ItemType File -Force -Value "docker build -t adachi-bot:latest . && docker run -d --name adachi-bot --restart=always --network=adachi-net -p 80:80 -v ${work_dir}\config:/bot/config -v ${work_dir}\logs:/bot/logs -v ${work_dir}\src:/bot/src -v ${work_dir}\package.json:/bot/package.json -v ${work_dir}\data:/bot/data adachi-bot:latest"
     docker run -d --name adachi-redis --restart=always --network=adachi-net -e TZ=Asia/Shanghai -v ${work_dir}+"\redis.conf":/etc/redis/redis.conf -v ${work_dir} + "\database":/data redis:6.2.3 redis-server /etc/redis/redis.conf
     if ($qr_code)
     {
         Write-Output "ticket请输入到控制台后「回车」即可，账号登录成功后CTRL+C结束并手动运行./bot-start.bat"
         # 更换启动方式(放在服务启动前面避免登录完成后脚本中断无法继续执行)
         (Get-Content -Path .\Dockerfile) |
-            ForEach-Object {$_ -Replace 'run login', 'start'} |
+            ForEach-Object {$_ -Replace 'run login', 'run docker-start'} |
                 Set-Content -Path .\Dockerfile
-        docker run --rm --name adachi-bot --network=adachi-net -p 80:80 -e docker=yes -v ${work_dir} + "\config":/bot/config -v ${work_dir} + "\log":/bot/logs -v ${work_dir} + "\src":/bot/src -v ${work_dir} + "\package.json":/bot/package.json -v ${work_dir} + "\data":/bot/data adachi-bot:latest
+        docker run --rm --name adachi-bot --network=adachi-net -p 80:80 -v ${work_dir} + "\config":/bot/config -v ${work_dir} + "\log":/bot/logs -v ${work_dir} + "\src":/bot/src -v ${work_dir} + "\package.json":/bot/package.json -v ${work_dir} + "\data":/bot/data adachi-bot:latest
         exit 0
     }
-    docker run -d --name adachi-bot --restart=always --network=adachi-net -p 80:80 -e docker=yes -v "${work_dir}\config":/bot/config -v "${work_dir}\logs":/bot/logs -v "${work_dir}\src":/bot/src -v "${work_dir}\package.json":/bot/package.json -v "${work_dir}\data":/bot/data adachi-bot:latest
+    docker run -d --name adachi-bot --restart=always --network=adachi-net -p 80:80 -v "${work_dir}\config":/bot/config -v "${work_dir}\logs":/bot/logs -v "${work_dir}\src":/bot/src -v "${work_dir}\package.json":/bot/package.json -v "${work_dir}\data":/bot/data adachi-bot:latest
 }
 elseif ($run_with_docker_compose)
 {
@@ -486,7 +485,7 @@ elseif ($run_with_docker_compose)
         docker compose build
         # 更换启动方式(放在服务启动前面避免登录完成后脚本中断无法继续执行)
         (Get-Content -Path .\Dockerfile) |
-            ForEach-Object {$_ -Replace 'run login', 'start'} |
+            ForEach-Object {$_ -Replace 'run login', 'run docker-start'} |
                 Set-Content -Path .\Dockerfile
         docker compose up --no-build
         exit 0
@@ -496,12 +495,7 @@ elseif ($run_with_docker_compose)
 else
 {
     npm i
-    npm start
-}
-
-if ($run_with_docker)
-{
-    Write-Output "服务已经在启动中了..."
+    npm run start
 
     $loop = $true
     while($loop) {
@@ -515,6 +509,12 @@ if ($run_with_docker)
         Start-Sleep -s 10
     }
 
-    Write-Output "\t<============================服务已启动,以下是BOT服务的日志内容======================>"
-    Get-Content -Encoding utf8 -Path $logfile -Wait
+    Write-Output "\t<============================服务已启动,以下是BOT服务的日志内容(CTRL+C结束查看日志)======================>"
+    pm2 log
+}
+
+if ($run_with_docker)
+{
+    Write-Output "\t<============================服务已经在启动中了...,以下是BOT服务的日志内容(CTRL+C结束查看日志)======================>"
+    docker logs -f adachi-bot
 }

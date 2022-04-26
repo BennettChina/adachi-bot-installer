@@ -228,7 +228,8 @@ webConsole:
   consolePort: 80
   tcpLoggerPort: 54921
   jwtSecret: ${jwt_secret}
-atBOT: false"  >  ${work_dir}/Adachi-BOT/config/setting.yml
+atBOT: false
+addFriend: false"  >  ${work_dir}/Adachi-BOT/config/setting.yml
 
 echo "cookies:
   - ${mys_cookie}"  >  ${work_dir}/Adachi-BOT/config/cookies.yml
@@ -238,7 +239,7 @@ echo "cardWeaponStyle: normal
 cardProfile: random
 serverPort: 58612"  >  ${work_dir}/Adachi-BOT/config/genshin.yml
 
-npm_param="start"
+npm_param="run docker-start"
 if [ "${qrcode}" == true ]; then
   npm_param="run login"
 fi
@@ -249,7 +250,7 @@ if [ "${use_analysis_plugin}" != true ]; then
 	echo "FROM silverystar/centos-puppeteer-env
 
 ENV LANG en_US.utf8
-RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && yum install -y git
 
 WORKDIR /bot
 COPY . /bot
@@ -261,7 +262,7 @@ else
 #设置容器内的字符集,处理header为中文时乱码问题
 ENV LANG en_US.utf8
 #设置时区、创建字体文件夹
-RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && mkdir -p /usr/share/fonts/chinese && chmod -R 755 /usr/share/fonts/chinese
+RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && mkdir -p /usr/share/fonts/chinese && chmod -R 755 /usr/share/fonts/chinese && && yum install -y git
 #将字体拷贝到容器内(字体文件名可修改为你使用的字体)
 COPY font/MiSans-Light.ttf /usr/share/fonts/chinese
 #扫描字体并进行索引
@@ -291,7 +292,7 @@ services:
       context: .
     image: adachi-bot:latest
     ports:
-      - 8849:80
+      - 80:80
     container_name: adachi-bot
     environment:
       docker: \"yes\"
@@ -313,21 +314,14 @@ else
   # 将登录替换启动
   docker-compose build
   if [ "$(uname)" == 'Darwin' ]; then
-    sed -i '' 's/run login/start/' "${work_dir}/Adachi-BOT/Dockerfile"
+    sed -i '' 's/run login/run docker-start/' "${work_dir}/Adachi-BOT/Dockerfile"
   else
-    sed -i 's/run login/start/' "${work_dir}/Adachi-BOT/Dockerfile"
+    sed -i 's/run login/run docker-start/' "${work_dir}/Adachi-BOT/Dockerfile"
   fi
   docker-compose up --no-build
   exit 0
 fi
-echo "BOT正在运行中,请稍等..."
-
-log_file=${work_dir}/Adachi-BOT/logs/bot.$(date +%Y-%m-%d).log
-
-#一直循环直到log文件已经创建
-while [ ! -f ${log_file} ]; do sleep 10s; done
-
-echo "\t<============================服务已启动============================>\n-) webconsole端口优化为8849，setting中使用了默认配置。\n-) 可在Adachi-BOT目录中使用docker-compose down关闭服务，docker-compose up -d启动服务。\n-) 可根据官方文档https://docs.adachi.top/config/#setting-yml重新设置你的配置，使用的指令可根据#help指令的结果对照在command.yml中修改。\n\t<======================以下是BOT服务的日志内容======================>"
-
+echo "\t<============================BOT正在运行中,请稍等...============================>\n-) setting中使用了默认配置。\n-) 可在Adachi-BOT目录中使用docker-compose down关闭服务，docker-compose up -d启动服务。\n-) 可根据官方文档https://docs.adachi.top/config/#setting-yml重新设置你的配置，使用的指令可根据#help指令的结果对照在command.yml中修改。\n\t<======================以下是BOT服务的日志内容======================>"
 echo "使用CTRL+C组合键即可结束日志查看."
-tail -100f "${work_dir}/Adachi-BOT/logs/bot.$(date +%Y-%m-%d).log"
+
+docker logs -f adachi-bot
