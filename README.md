@@ -11,7 +11,7 @@ wget https://cdn.jsdelivr.net/gh/BennettChina/adachi-bot-installer@main/adachi_b
 
 ## Windows
 
-`Windows`环境可以使用下面的命令，需要以管理员的权限打开`PowerShell`，然后输入下面的命令并运行，**注意：运行后窗口不可关闭！！！**
+`Windows`环境可以使用下面的命令，需要以管理员的权限打开`PowerShell`，然后`cd 你想要安装的目录路径`再输入下面的命令并运行，**注意：运行后窗口不可关闭！！！**
 
 常见问题：
 
