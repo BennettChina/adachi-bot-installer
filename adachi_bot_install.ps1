@@ -402,7 +402,7 @@ if ($run_with_docker -or $run_with_docker_compose)
 
 ENV LANG en_US.utf8
 
-RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && mkdir -p /usr/share/fonts/chinese && chmod -R 755 /usr/share/fonts/chinese && && yum install -y git
+RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && mkdir -p /usr/share/fonts/chinese && chmod -R 755 /usr/share/fonts/chinese && yum install -y git && npm config set registry https://registry.npmmirror.com
 
 COPY font/MiSans-Light.ttf /usr/share/fonts/chinese
 
@@ -411,19 +411,19 @@ RUN cd /usr/share/fonts/chinese && mkfontscale
 WORKDIR /bot
 COPY . /bot
 
-CMD nohup sh -c `"cnpm install && npm ${npm_param}`""
+CMD nohup sh -c `"npm install && npm ${npm_param}`""
     }
     else
     {
         New-Item -Path .\Dockerfile -ItemType File -Force -Value "FROM silverystar/centos-puppeteer-env
 
 ENV LANG en_US.utf8
-RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && && yum install -y git
+RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && yum install -y git && npm config set registry https://registry.npmmirror.com
 
 WORKDIR /bot
 COPY . /bot
 
-CMD nohup sh -c `"cnpm install && npm ${npm_param}`""
+CMD nohup sh -c `"npm install && npm ${npm_param}`""
     }
 
     New-Item -Path .\docker-compose.yml -ItemType File -Force -Value "version: `"3.7`"
@@ -496,21 +496,6 @@ else
 {
     npm i
     npm run start
-
-    $loop = $true
-    while($loop) {
-        $now = Get-Date -Format "yyyy-MM-dd"
-        $logfile = "${work_dir}\log\bot.$now.log"
-        if (Test-Path -Path "${logfile}")
-        {
-            $loop = $false
-        }
-
-        Start-Sleep -s 10
-    }
-
-    Write-Output "\t<============================服务已启动,以下是BOT服务的日志内容(CTRL+C结束查看日志)======================>"
-    pm2 log
 }
 
 if ($run_with_docker)

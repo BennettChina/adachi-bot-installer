@@ -250,19 +250,19 @@ if [ "${use_analysis_plugin}" != true ]; then
 	echo "FROM silverystar/centos-puppeteer-env
 
 ENV LANG en_US.utf8
-RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && yum install -y git
+RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && yum install -y git && npm config set registry https://registry.npmmirror.com
 
 WORKDIR /bot
 COPY . /bot
 
-CMD nohup sh -c \"cnpm install && npm ${npm_param}\""  >  ${work_dir}/Adachi-BOT/Dockerfile
+CMD nohup sh -c \"npm install && npm ${npm_param}\""  >  ${work_dir}/Adachi-BOT/Dockerfile
 else
 	echo "FROM silverystar/centos-puppeteer-env
 
 #设置容器内的字符集,处理header为中文时乱码问题
 ENV LANG en_US.utf8
 #设置时区、创建字体文件夹
-RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && mkdir -p /usr/share/fonts/chinese && chmod -R 755 /usr/share/fonts/chinese && && yum install -y git
+RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && mkdir -p /usr/share/fonts/chinese && chmod -R 755 /usr/share/fonts/chinese && yum install -y git && npm config set registry https://registry.npmmirror.com
 #将字体拷贝到容器内(字体文件名可修改为你使用的字体)
 COPY font/MiSans-Light.ttf /usr/share/fonts/chinese
 #扫描字体并进行索引
@@ -271,7 +271,7 @@ RUN cd /usr/share/fonts/chinese && mkfontscale
 WORKDIR /bot
 COPY . /bot
 
-CMD nohup sh -c \"cnpm install && npm ${npm_param}\"" > ${work_dir}/Adachi-BOT/Dockerfile
+CMD nohup sh -c \"npm install && npm ${npm_param}\"" > ${work_dir}/Adachi-BOT/Dockerfile
 fi
 
 #优化docker-compose.yml
