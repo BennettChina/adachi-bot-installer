@@ -385,6 +385,7 @@ webConsole:
   tcpLoggerPort: ${logger_port}
   jwtSecret: ${jwt_secret}
 atBOT: false
+addFriend: false
 "
 
 New-Item -Path .\config\cookies.yml -ItemType File -Force -Value "cookies:
@@ -463,7 +464,7 @@ if ($run_with_docker)
     # 编译镜像并启动
     docker build -t adachi-bot:latest .
     docker network create adachi-net
-    New-Item -Path .\bot-start.bat -ItemType File -Force -Value "docker build -t adachi-bot:latest . && docker run -d --name adachi-bot --restart=always --network=adachi-net -p 80:80 -e docker=yes -v ${work_dir}\config:/bot/config -v ${work_dir}\logs:/bot/logs -v ${work_dir}\src:/bot/src -v ${work_dir}\package.json:/bot/package.json -v ${work_dir}\data:/bot/data adachi-bot:latest"
+    New-Item -Path .\bot-start.bat -ItemType File -Force -Value "docker build -t adachi-bot:latest . && docker run -d --name adachi-bot --restart=always --network=adachi-net -p 80:80 -v ${work_dir}\config:/bot/config -v ${work_dir}\logs:/bot/logs -v ${work_dir}\src:/bot/src -v ${work_dir}\package.json:/bot/package.json -v ${work_dir}\data:/bot/data adachi-bot:latest"
     docker run -d --name adachi-redis --restart=always --network=adachi-net -e TZ=Asia/Shanghai -v ${work_dir}+"\redis.conf":/etc/redis/redis.conf -v ${work_dir} + "\database":/data redis:6.2.3 redis-server /etc/redis/redis.conf
     if ($qr_code)
     {
@@ -472,10 +473,10 @@ if ($run_with_docker)
         (Get-Content -Path .\Dockerfile) |
             ForEach-Object {$_ -Replace 'run login', 'start'} |
                 Set-Content -Path .\Dockerfile
-        docker run --rm --name adachi-bot --network=adachi-net -p 80:80 -e docker=yes -v ${work_dir} + "\config":/bot/config -v ${work_dir} + "\log":/bot/logs -v ${work_dir} + "\src":/bot/src -v ${work_dir} + "\package.json":/bot/package.json -v ${work_dir} + "\data":/bot/data adachi-bot:latest
+        docker run --rm --name adachi-bot --network=adachi-net -p 80:80 -v ${work_dir} + "\config":/bot/config -v ${work_dir} + "\log":/bot/logs -v ${work_dir} + "\src":/bot/src -v ${work_dir} + "\package.json":/bot/package.json -v ${work_dir} + "\data":/bot/data adachi-bot:latest
         exit 0
     }
-    docker run -d --name adachi-bot --restart=always --network=adachi-net -p 80:80 -e docker=yes -v "${work_dir}\config":/bot/config -v "${work_dir}\logs":/bot/logs -v "${work_dir}\src":/bot/src -v "${work_dir}\package.json":/bot/package.json -v "${work_dir}\data":/bot/data adachi-bot:latest
+    docker run -d --name adachi-bot --restart=always --network=adachi-net -p 80:80 -v "${work_dir}\config":/bot/config -v "${work_dir}\logs":/bot/logs -v "${work_dir}\src":/bot/src -v "${work_dir}\package.json":/bot/package.json -v "${work_dir}\data":/bot/data adachi-bot:latest
 }
 elseif ($run_with_docker_compose)
 {
