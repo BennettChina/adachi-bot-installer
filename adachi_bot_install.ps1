@@ -91,10 +91,14 @@ try
 }
 catch [System.Management.Automation.CommandNotFoundException]
 {
-    Write-Output "使用的低版本docker未内置docker-compose,将使用常规docker方式启动"
+    if ($run_with_docker)
+    {
+        Write-Output "使用的Docker版本太低，请更新后再使用本脚本."
+        exit
+    }
 }
 
-if (!$run_with_docker)
+if (!$run_with_docker_compose)
 {
     $redis_status = Read-Host "您是否已安装redis并已在运行？请输入 y 或 n "
     if ($redis_status -eq "y")
@@ -335,12 +339,12 @@ while($loop) {
         1 {
             $qq_password = Read-Host "请输入机器人的QQ密码" -MaskInput
             $qr_code = $false
-            $npm_param = "run docker-start"
+            $npm_param = "docker-start"
         }
         2 {
             $qr_code = $true
             $qq_password = "`"`""
-            $npm_param = "run login"
+            $npm_param = "login"
         }
         Default {
             Write-Output "你输入的编号非法,请重新输入!"
@@ -355,7 +359,7 @@ javascript:(function () {let domain = document.domain;let cookie = document.cook
 $mys_cookie = Read-Host "请输入一个米游社cookie: "
 
 
-if(!($run_with_docker))
+if(!($run_with_docker_compose))
 {
     $redis_port = 6379
     $logger_port = 4921
@@ -393,7 +397,7 @@ New-Item -Path .\config\genshin.yml -ItemType File -Force -Value "cardWeaponStyl
 cardProfile: random
 serverPort: ${genshin_port}"
 
-if ($run_with_docker -or $run_with_docker_compose)
+if ($run_with_docker_compose)
 {
     #优化Dockerfile
     if ($use_analysis_plugin)
@@ -401,17 +405,16 @@ if ($run_with_docker -or $run_with_docker_compose)
         New-Item -Path .\Dockerfile -ItemType File -Force -Value "FROM silverystar/centos-puppeteer-env
 
 ENV LANG en_US.utf8
+RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && yum install -y git && npm config set registry https://registry.npmmirror.com && mkdir -p /usr/share/fonts/chinese && chmod -R 755 /usr/share/fonts/chinese
 
-RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && mkdir -p /usr/share/fonts/chinese && chmod -R 755 /usr/share/fonts/chinese && yum install -y git && npm config set registry https://registry.npmmirror.com
-
+#将字体拷贝到容器内(字体文件名需要修改为你使用的字体ttc、ttf均可)
 COPY font/MiSans-Light.ttf /usr/share/fonts/chinese
-
+#扫描字体并进行索引
 RUN cd /usr/share/fonts/chinese && mkfontscale
 
-WORKDIR /bot
 COPY . /bot
-
-CMD nohup sh -c `"npm install && npm ${npm_param}`""
+WORKDIR /bot
+CMD nohup sh -c `"npm i && npm i puppeteer --unsafe-perm=true --allow-root && npm run ${npm_param}`""
     }
     else
     {
@@ -420,63 +423,14 @@ CMD nohup sh -c `"npm install && npm ${npm_param}`""
 ENV LANG en_US.utf8
 RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && yum install -y git && npm config set registry https://registry.npmmirror.com
 
-WORKDIR /bot
 COPY . /bot
-
-CMD nohup sh -c `"npm install && npm ${npm_param}`""
+WORKDIR /bot
+CMD nohup sh -c `"npm i && npm i puppeteer --unsafe-perm=true --allow-root && npm run ${npm_param}`""
     }
-
-    New-Item -Path .\docker-compose.yml -ItemType File -Force -Value "version: `"3.7`"
-services:
-  redis:
-    image: redis:6.2.3
-    container_name: adachi-redis
-    environment:
-      - TZ=Asia/Shanghai
-    restart: always
-    command: redis-server /usr/local/etc/redis/redis.conf
-    volumes:
-      - ./database:/data
-      - ./redis.conf:/usr/local/etc/redis/redis.conf
-  bot:
-    build:
-      context: .
-    image: adachi-bot:latest
-    ports:
-      - 80:80
-    container_name: adachi-bot
-    environment:
-      docker: `"yes`"
-    depends_on:
-      - redis
-    volumes:
-      - ./config:/bot/config
-      - ./logs:/bot/logs
-      - ./src:/bot/src
-      - ./package.json:/bot/package.json"
 }
 
 # 启动程序
-if ($run_with_docker)
-{
-    # 编译镜像并启动
-    docker build -t adachi-bot:latest .
-    docker network create adachi-net
-    New-Item -Path .\bot-start.bat -ItemType File -Force -Value "docker build -t adachi-bot:latest . && docker run -d --name adachi-bot --restart=always --network=adachi-net -p 80:80 -v ${work_dir}\config:/bot/config -v ${work_dir}\logs:/bot/logs -v ${work_dir}\src:/bot/src -v ${work_dir}\package.json:/bot/package.json -v ${work_dir}\data:/bot/data adachi-bot:latest"
-    docker run -d --name adachi-redis --restart=always --network=adachi-net -e TZ=Asia/Shanghai -v ${work_dir}+"\redis.conf":/etc/redis/redis.conf -v ${work_dir} + "\database":/data redis:6.2.3 redis-server /etc/redis/redis.conf
-    if ($qr_code)
-    {
-        Write-Output "ticket请输入到控制台后「回车」即可，账号登录成功后CTRL+C结束并手动运行./bot-start.bat"
-        # 更换启动方式(放在服务启动前面避免登录完成后脚本中断无法继续执行)
-        (Get-Content -Path .\Dockerfile) |
-            ForEach-Object {$_ -Replace 'run login', 'run docker-start'} |
-                Set-Content -Path .\Dockerfile
-        docker run --rm --name adachi-bot --network=adachi-net -p 80:80 -v ${work_dir} + "\config":/bot/config -v ${work_dir} + "\log":/bot/logs -v ${work_dir} + "\src":/bot/src -v ${work_dir} + "\package.json":/bot/package.json -v ${work_dir} + "\data":/bot/data adachi-bot:latest
-        exit 0
-    }
-    docker run -d --name adachi-bot --restart=always --network=adachi-net -p 80:80 -v "${work_dir}\config":/bot/config -v "${work_dir}\logs":/bot/logs -v "${work_dir}\src":/bot/src -v "${work_dir}\package.json":/bot/package.json -v "${work_dir}\data":/bot/data adachi-bot:latest
-}
-elseif ($run_with_docker_compose)
+if ($run_with_docker_compose)
 {
     if ($qr_code)
     {
@@ -495,10 +449,11 @@ elseif ($run_with_docker_compose)
 else
 {
     npm i
-    npm run start
+    Write-Output "\t<============================服务已经在启动中了...,以下是BOT服务的日志内容(请不要关闭该窗口)======================>"
+    npm run win-start
 }
 
-if ($run_with_docker)
+if ($run_with_docker_compose)
 {
     Write-Output "\t<============================服务已经在启动中了...,以下是BOT服务的日志内容(CTRL+C结束查看日志)======================>"
     docker logs -f adachi-bot
