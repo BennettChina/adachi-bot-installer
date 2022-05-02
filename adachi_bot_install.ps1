@@ -242,6 +242,11 @@ Write-Output "请选择需要使用的插件"
 Write-Output "1) 音乐插件"
 Write-Output "2) 抽卡分析插件"
 Write-Output "3) 圣遗物评分插件"
+Write-Output "4) 聊天插件"
+Write-Output "5) 搜图插件"
+Write-Output "6) 设置入群欢迎词插件"
+Write-Output "6) 设置入群欢迎词插件"
+Write-Output "7) 热点新闻订阅插件"
 $loop = $true
 Set-Location "src\plugins"
 while ($loop)
@@ -258,13 +263,6 @@ while ($loop)
         2 {
             git clone https://ghproxy.com/https://github.com/wickedll/genshin_draw_analysis.git --depth=1
             $use_plugins="${use_plugins}"+" [analysis]"
-            if($run_with_docker)
-            {
-                New-Item -Path "${work_dir}\font" -ItemType Directory -Force
-                Write-Output "即将开始下载插件需要的中文字体..."
-                Invoke-WebRequest "https://source.hibennett.cn/MiSans-Light.ttf" -OutFile "${work_dir}\font\MiSans-Light.ttf"
-            }
-
             $use_analysis_plugin= $true
             Write-Output "抽卡分析插件已下载，使用方式请访问 https://github.com/wickedll/genshin_draw_analysis"
             Write-Output "您已选择 $use_plugins"
@@ -274,6 +272,46 @@ while ($loop)
             $use_plugins="${use_plugins} "+" [rating]"
             Write-Output "圣遗物评分插件已下载，使用方式请访问 https://github.com/wickedll/genshin_rating"
             Write-Output "您已选择 $use_plugins"
+        }
+        4{
+            git clone https://ghproxy.com/https://github.com/Extrwave/Chat-Plugins.git --depth=1
+            use_plugins="${use_plugins} "+" [聊天插件]"
+            Write-Output "聊天插件已下载，使用方式请访问 https://github.com/Extrwave/Chat-Plugins"
+        }
+        5{
+            git clone https://ghproxy.com/https://github.com/MarryDream/pic_search.git --depth=1
+            use_plugins="${use_plugins} "+" [搜图插件]"
+            Write-Output "搜图插件已下载，使用方式请访问 https://github.com/MarryDream/pic_search"
+        }
+        6{
+            git clone https://ghproxy.com/https://github.com/BennettChina/group_helper.git --depth=1
+            use_plugins="${use_plugins} "+" [设置入群欢迎词插件]"
+            Write-Output "设置入群欢迎词插件已下载，使用方式请访问 https://github.com/BennettChina/group_helper"
+        }
+        7{
+            git clone https://ghproxy.com/https://github.com/BennettChina/hot-news.git --depth=1
+            use_plugins="${use_plugins} "+" [热点新闻订阅插件]"
+            Write-Output "热点新闻订阅插件已下载，使用方式请访问 https://github.com/BennettChina/hot-news"
+        }
+        "all" {
+            git clone -b music https://ghproxy.com/https://github.com/SilveryStar/Adachi-Plugin.git --depth=1 music
+            Write-Output "音乐插件已下载，使用方式请访问 https://github.com/SilveryStar/Adachi-Plugin/tree/music"
+            git clone https://ghproxy.com/https://github.com/wickedll/genshin_draw_analysis.git --depth=1
+            $use_analysis_plugin=$true
+            Write-Output "抽卡分析插件已下载，使用方式请访问 https://github.com/wickedll/genshin_draw_analysis"
+            git clone https://ghproxy.com/https://github.com/wickedll/genshin_rating.git --depth=1
+            Write-Output "圣遗物评分插件已下载，使用方式请访问 https://github.com/wickedll/genshin_rating"
+            git clone https://ghproxy.com/https://github.com/Extrwave/Chat-Plugins.git --depth=1
+            Write-Output "聊天插件已下载，使用方式请访问 https://github.com/Extrwave/Chat-Plugins"
+            git clone https://ghproxy.com/https://github.com/MarryDream/pic_search.git --depth=1
+            Write-Output "搜图插件已下载，使用方式请访问 https://github.com/MarryDream/pic_search"
+            git clone https://ghproxy.com/https://github.com/BennettChina/group_helper.git --depth=1
+            Write-Output "设置入群欢迎词插件已下载，使用方式请访问 https://github.com/BennettChina/group_helper"
+            git clone https://ghproxy.com/https://github.com/BennettChina/hot-news.git --depth=1
+            Write-Output "热点新闻订阅插件已下载，使用方式请访问 https://github.com/BennettChina/hot-news"
+            Write-Output "已为你下载全部插件!"
+            $loop = $false
+            Set-Location $work_dir
         }
         Default {
             $loop = $false
@@ -337,7 +375,8 @@ while($loop) {
     $loop = $false
     Switch($user_in) {
         1 {
-            $qq_password = Read-Host "请输入机器人的QQ密码" -MaskInput
+            $pwd_secure_str = Read-Host -AsSecureString "请输入机器人的QQ密码"
+            $qq_password = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($pwd_secure_str))
             $qr_code = $false
             $npm_param = "docker-start"
         }
@@ -405,12 +444,7 @@ if ($run_with_docker_compose)
         New-Item -Path .\Dockerfile -ItemType File -Force -Value "FROM silverystar/centos-puppeteer-env
 
 ENV LANG en_US.utf8
-RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && yum install -y git && npm config set registry https://registry.npmmirror.com && mkdir -p /usr/share/fonts/chinese && chmod -R 755 /usr/share/fonts/chinese
-
-#将字体拷贝到容器内(字体文件名需要修改为你使用的字体ttc、ttf均可)
-COPY font/MiSans-Light.ttf /usr/share/fonts/chinese
-#扫描字体并进行索引
-RUN cd /usr/share/fonts/chinese && mkfontscale
+RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && yum install -y git && npm config set registry https://registry.npmmirror.com && mkdir -p /usr/share/fonts/chinese && chmod -R 755 /usr/share/fonts/chinese && curl -L -# `"https://source.hibennett.cn/MiSans-Light.ttf`" -o `"/usr/share/fonts/chinese/MiSans-Light.ttf`" && cd /usr/share/fonts/chinese && mkfontscale
 
 COPY . /bot
 WORKDIR /bot

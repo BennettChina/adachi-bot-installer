@@ -1,4 +1,37 @@
 #!/bin/bash
+
+ask() {
+    char_count='0'
+    prompt="${1}: "
+    reply=''
+    while IFS='' read -n '1' -p "${prompt}" -r -s 'char'
+    do
+        case "${char}" in
+            # Handles NULL
+            ( $'\000' )
+            break
+            ;;
+            # Handles BACKSPACE and DELETE
+            ( $'\010' | $'\177' )
+            if (( char_count > 0 )); then
+                prompt=$'\b \b'
+                reply="${reply%?}"
+                (( char_count-- ))
+            else
+                prompt=''
+            fi
+            ;;
+            ( * )
+            prompt='*'
+            reply+="${char}"
+            (( char_count++ ))
+            ;;
+        esac
+    done
+    printf '\n' >&2
+    printf '%s\n' "${reply}"
+}
+
 set -e
 
 if [ "$(uname)" != 'Linux' ] && [ "$(uname)" != 'Darwin' ]; then echo '不支持的操作系统!'; fi
@@ -36,21 +69,19 @@ fi
 
 if [ -x "$(command -v docker-compose)" ]; then
 	echo "docker-compose已经安装, 跳过!"
+elif [ "$(uname)" == 'Darwin' ]; then
+  docker compose version
+  if [ "$?" != "0" ]; then
+    echo "Docker Desktop版本太低，请更新后再使用本脚本!"
+    exit 1
+  fi
 else
 	echo "安装docker-compose中..."
-	if [ "$(uname)" == 'Darwin' ]; then
-	  curl -L "https://ghproxy.com/https://github.com/docker/compose/releases/download/v2.3.0/docker-compose-$(uname -s)-$(uname -m)" -o "/usr/local/bin/docker-compose"
-	else
-	  wget "https://ghproxy.com/https://github.com/docker/compose/releases/download/v2.3.0/docker-compose-$(uname -s)-$(uname -m)" -O "/usr/local/bin/docker-compose"
-	fi
+	wget "https://ghproxy.com/https://github.com/docker/compose/releases/download/v2.3.0/docker-compose-$(uname -s)-$(uname -m)" -O "/usr/local/bin/docker-compose"
 	if [ ! -f "/usr/local/bin/docker-compose" ] || [ "$(ls -l /usr/local/bin/docker-compose | awk '{print $5}')" -lt 10000000 ]; then
 		# 尝试从daocloud镜像源再次下载
 		echo "从github下载docker-compose失败，将从镜像地址重试。"
-		if [ "$(uname)" == 'Darwin' ]; then
-		  curl -L "https://get.daocloud.io/docker/compose/releases/download/v2.3.0/docker-compose-$(uname -s)-$(uname -m)" -o "/usr/local/bin/docker-compose"
-		else
-		  wget "https://get.daocloud.io/docker/compose/releases/download/v2.3.0/docker-compose-$(uname -s)-$(uname -m)" -O "/usr/local/bin/docker-compose"
-		fi
+		wget "https://get.daocloud.io/docker/compose/releases/download/v2.3.0/docker-compose-$(uname -s)-$(uname -m)" -O "/usr/local/bin/docker-compose"
 	fi
 	chmod +x /usr/local/bin/docker-compose
 	ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
@@ -114,10 +145,10 @@ fi
 git clone https://ghproxy.com/https://github.com/SilveryStar/Adachi-BOT.git --depth=1
 echo "adachi-bot拉取成功."
 
-echo "开始选择安装插件，回复编号选择(回复0结束选择)..."
+echo "开始选择安装插件，回复编号选择(回复all选择全部,回复0结束选择)..."
 cd "Adachi-BOT/src/plugins"
 use_plugins=""
-select plugin in "音乐插件" "抽卡分析" "圣遗物评分"; do
+select plugin in "音乐插件" "抽卡分析" "圣遗物评分" "聊天插件" "搜图插件" "设置入群欢迎词插件" "热点新闻订阅插件"; do
   case $plugin in
     "音乐插件")
       git clone -b music https://ghproxy.com/https://github.com/SilveryStar/Adachi-Plugin.git --depth=1 music
@@ -127,21 +158,52 @@ select plugin in "音乐插件" "抽卡分析" "圣遗物评分"; do
     "抽卡分析")
       git clone https://ghproxy.com/https://github.com/wickedll/genshin_draw_analysis.git --depth=1
       use_plugins="${use_plugins}"" [抽卡分析插件]"
-      # 下载插件需要的中文字体,此处使用小米的MiSans-Light字体
-      mkdir -p "${work_dir}/Adachi-BOT/font"
-      echo "开始下载插件需要的中文字体..."
-      if [ "$(uname)" == 'Darwin' ]; then
-        curl -L "https://source.hibennett.cn/MiSans-Light.ttf" -o "${work_dir}/Adachi-BOT/font/MiSans-Light.ttf"
-      else
-        wget "https://source.hibennett.cn/MiSans-Light.ttf" -O "${work_dir}/Adachi-BOT/font/MiSans-Light.ttf"
-      fi
       use_analysis_plugin=true
       echo "抽卡分析插件已下载，使用方式请访问 https://github.com/wickedll/genshin_draw_analysis"
     ;;
     "圣遗物评分")
       git clone https://ghproxy.com/https://github.com/wickedll/genshin_rating.git --depth=1
       use_plugins="${use_plugins} "" [圣遗物评分插件]"
-      echo "抽卡分析插件已下载，使用方式请访问 https://github.com/wickedll/genshin_rating"
+      echo "圣遗物评分插件已下载，使用方式请访问 https://github.com/wickedll/genshin_rating"
+    ;;
+    "聊天插件")
+      git clone https://ghproxy.com/https://github.com/Extrwave/Chat-Plugins.git --depth=1
+      use_plugins="${use_plugins} "" [聊天插件]"
+      echo "聊天插件已下载，使用方式请访问 https://github.com/Extrwave/Chat-Plugins"
+    ;;
+    "搜图插件")
+      git clone https://ghproxy.com/https://github.com/MarryDream/pic_search.git --depth=1
+      use_plugins="${use_plugins} "" [搜图插件]"
+      echo "搜图插件已下载，使用方式请访问 https://github.com/MarryDream/pic_search"
+    ;;
+    "设置入群欢迎词插件")
+      git clone https://ghproxy.com/https://github.com/BennettChina/group_helper.git --depth=1
+      use_plugins="${use_plugins} "" [设置入群欢迎词插件]"
+      echo "设置入群欢迎词插件已下载，使用方式请访问 https://github.com/BennettChina/group_helper"
+    ;;
+    "热点新闻订阅插件")
+      git clone https://ghproxy.com/https://github.com/BennettChina/hot-news.git --depth=1
+      use_plugins="${use_plugins} "" [热点新闻订阅插件]"
+      echo "热点新闻订阅插件已下载，使用方式请访问 https://github.com/BennettChina/hot-news"
+    ;;
+    "all")
+      git clone -b music https://ghproxy.com/https://github.com/SilveryStar/Adachi-Plugin.git --depth=1 music
+      echo "音乐插件已下载，使用方式请访问 https://github.com/SilveryStar/Adachi-Plugin/tree/music"
+      git clone https://ghproxy.com/https://github.com/wickedll/genshin_draw_analysis.git --depth=1
+      use_analysis_plugin=true
+      echo "抽卡分析插件已下载，使用方式请访问 https://github.com/wickedll/genshin_draw_analysis"
+      git clone https://ghproxy.com/https://github.com/wickedll/genshin_rating.git --depth=1
+      echo "圣遗物评分插件已下载，使用方式请访问 https://github.com/wickedll/genshin_rating"
+      git clone https://ghproxy.com/https://github.com/Extrwave/Chat-Plugins.git --depth=1
+      echo "聊天插件已下载，使用方式请访问 https://github.com/Extrwave/Chat-Plugins"
+      git clone https://ghproxy.com/https://github.com/MarryDream/pic_search.git --depth=1
+      echo "搜图插件已下载，使用方式请访问 https://github.com/MarryDream/pic_search"
+      git clone https://ghproxy.com/https://github.com/BennettChina/group_helper.git --depth=1
+      echo "设置入群欢迎词插件已下载，使用方式请访问 https://github.com/BennettChina/group_helper"
+      git clone https://ghproxy.com/https://github.com/BennettChina/hot-news.git --depth=1
+      echo "热点新闻订阅插件已下载，使用方式请访问 https://github.com/BennettChina/hot-news"
+      echo "已为你下载全部插件!"
+      break
     ;;
     *)
       echo "插件选择结束，你选择了${use_plugins}"
@@ -188,7 +250,7 @@ read -p "请输入机器人的QQ号: " qq_num
 echo "请选择登录方式:"
 select login_type in "密码" "扫码"; do
 	if [ $login_type == "密码" ]; then
-		 read -p "请输入机器人的密码: " qq_password
+		 qq_password="$(ask Password)"
 		 qrcode=false
 	else
 		qrcode=true
@@ -259,12 +321,7 @@ else
 	echo "FROM silverystar/centos-puppeteer-env
 
 ENV LANG en_US.utf8
-RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && yum install -y git && npm config set registry https://registry.npmmirror.com && mkdir -p /usr/share/fonts/chinese && chmod -R 755 /usr/share/fonts/chinese
-
-#将字体拷贝到容器内(字体文件名需要修改为你使用的字体ttc、ttf均可)
-COPY font/MiSans-Light.ttf /usr/share/fonts/chinese
-#扫描字体并进行索引
-RUN cd /usr/share/fonts/chinese && mkfontscale
+RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && yum install -y git && npm config set registry https://registry.npmmirror.com && mkdir -p /usr/share/fonts/chinese && chmod -R 755 /usr/share/fonts/chinese && curl -L -# \"https://source.hibennett.cn/MiSans-Light.ttf\" -o \"/usr/share/fonts/chinese/MiSans-Light.ttf\" && cd /usr/share/fonts/chinese && mkfontscale
 
 COPY . /bot
 WORKDIR /bot
