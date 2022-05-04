@@ -45,7 +45,7 @@ cd ~/Termux-Linux/Ubuntu
 ./start-ubuntu.sh
 ```
 
-启动系统后再执行(目前只提供了 `Ubuntu` 的安装脚本，这个脚本只是把环境安装了，后续还需要按照[官方文档](https://docs.adachi.top/deploy/)安装)
+启动系统后再执行下面的命令(脚本除已选择的配置其他均使用的都是官方的默认配置，可根据 [官方文档](https://docs.adachi.top/config/) 自定义配置)
 
 ```shell
 wget https://cdn.jsdelivr.net/gh/BennettChina/adachi-bot-installer@main/termux-ubuntu.sh -O - | bash -
