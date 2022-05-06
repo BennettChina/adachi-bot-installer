@@ -421,7 +421,7 @@ helpMessageStyle: message
 logLevel: info
 dbPort: ${redis_port}
 webConsole:
-  enable: true
+  enable: false
   consolePort: ${console_port}
   tcpLoggerPort: ${logger_port}
   jwtSecret: ${jwt_secret}
@@ -436,59 +436,34 @@ New-Item -Path .\config\genshin.yml -ItemType File -Force -Value "cardWeaponStyl
 cardProfile: random
 serverPort: ${genshin_port}"
 
-if ($run_with_docker_compose)
+if ($run_with_docker_compose -and $use_analysis_plugin)
 {
     #优化Dockerfile
-    if ($use_analysis_plugin)
-    {
-        New-Item -Path .\Dockerfile -ItemType File -Force -Value "FROM silverystar/centos-puppeteer-env
+    New-Item -Path .\Dockerfile -ItemType File -Force -Value "FROM silverystar/centos-puppeteer-env
 
 ENV LANG en_US.utf8
 RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && yum install -y git && npm config set registry https://registry.npmmirror.com && mkdir -p /usr/share/fonts/chinese && chmod -R 755 /usr/share/fonts/chinese && curl -L -# `"https://source.hibennett.cn/MiSans-Light.ttf`" -o `"/usr/share/fonts/chinese/MiSans-Light.ttf`" && cd /usr/share/fonts/chinese && mkfontscale
 
 COPY . /bot
 WORKDIR /bot
-CMD nohup sh -c `"npm i && npm i puppeteer --unsafe-perm=true --allow-root && npm run ${npm_param}`""
-    }
-    else
-    {
-        New-Item -Path .\Dockerfile -ItemType File -Force -Value "FROM silverystar/centos-puppeteer-env
-
-ENV LANG en_US.utf8
-RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && yum install -y git && npm config set registry https://registry.npmmirror.com
-
-COPY . /bot
-WORKDIR /bot
-CMD nohup sh -c `"npm i && npm i puppeteer --unsafe-perm=true --allow-root && npm run ${npm_param}`""
-    }
+RUN npm i puppeteer --unsafe-perm=true --allow-root
+CMD nohup sh -c `"npm i && npm run docker-start`""
 }
 
 # 启动程序
 if ($run_with_docker_compose)
 {
-    if ($qr_code)
-    {
-        # 扫码方式启动
-        Write-Output 'ticket请输入到控制台后「回车」即可，账号登录成功后CTRL+C结束并手动运行docker compose up -d --build'
-        docker compose build
-        # 更换启动方式(放在服务启动前面避免登录完成后脚本中断无法继续执行)
-        (Get-Content -Path .\Dockerfile) |
-            ForEach-Object {$_ -Replace 'run login', 'run docker-start'} |
-                Set-Content -Path .\Dockerfile
-        docker compose up --no-build
-        exit 0
-    }
     docker compose up -d --build
 }
 else
 {
     npm i
-    Write-Output "\t<============================服务已经在启动中了...,以下是BOT服务的日志内容(请不要关闭该窗口)======================>"
+    Write-Output "\t<============================服务已经在启动中了...,以下是BOT服务的日志内容(请不要关闭该窗口,初次使用未启用webConsole)======================>"
     npm run win-start
 }
 
 if ($run_with_docker_compose)
 {
-    Write-Output "\t<============================服务已经在启动中了...,以下是BOT服务的日志内容(CTRL+C结束查看日志)======================>"
+    Write-Output "\t<============================服务已经在启动中了...,以下是BOT服务的日志内容(CTRL+C结束查看日志, 初次使用未启用webConsole)======================>"
     docker logs -f adachi-bot
 }

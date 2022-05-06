@@ -286,7 +286,7 @@ helpMessageStyle: message
 logLevel: info
 dbPort: 56379
 webConsole:
-  enable: true
+  enable: false
   consolePort: 80
   tcpLoggerPort: 54921
   jwtSecret: ${jwt_secret}
@@ -301,23 +301,8 @@ echo "cardWeaponStyle: normal
 cardProfile: random
 serverPort: 58612"  >  ${work_dir}/Adachi-BOT/config/genshin.yml
 
-npm_param="docker-start"
-if [ "${qrcode}" == true ]; then
-  npm_param="login"
-fi
-
 #优化Dockerfile
-if [ "${use_analysis_plugin}" != true ]; then
-
-	echo "FROM silverystar/centos-puppeteer-env
-
-ENV LANG en_US.utf8
-RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && yum install -y git && npm config set registry https://registry.npmmirror.com
-
-COPY . /bot
-WORKDIR /bot
-CMD nohup sh -c \"npm i && npm i puppeteer --unsafe-perm=true --allow-root && npm run ${npm_param}\""  >  ${work_dir}/Adachi-BOT/Dockerfile
-else
+if [ "${use_analysis_plugin}" == true ]; then
 	echo "FROM silverystar/centos-puppeteer-env
 
 ENV LANG en_US.utf8
@@ -325,27 +310,14 @@ RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && yum install -y g
 
 COPY . /bot
 WORKDIR /bot
-CMD nohup sh -c \"npm i && npm i puppeteer --unsafe-perm=true --allow-root && npm run ${npm_param}\"" > ${work_dir}/Adachi-BOT/Dockerfile
+RUN npm i puppeteer --unsafe-perm=true --allow-root
+CMD nohup sh -c \"npm i && npm run docker-start\"" > ${work_dir}/Adachi-BOT/Dockerfile
 fi
 
 echo "开始运行BOT..."
 cd Adachi-BOT
-if [ "${qrcode}" != true ]; then
-  docker-compose up -d --build
-else
-  # 扫码方式启动
-  echo 'ticket请输入到控制台后「回车」即可，账号登录成功后CTRL+C结束并手动运行cd Adachi-BOT && docker-compose down && docker-compose up -d --build'
-  # 将登录替换启动
-  docker-compose build
-  if [ "$(uname)" == 'Darwin' ]; then
-    sed -i '' 's/run login/run docker-start/' "${work_dir}/Adachi-BOT/Dockerfile"
-  else
-    sed -i 's/run login/run docker-start/' "${work_dir}/Adachi-BOT/Dockerfile"
-  fi
-  docker-compose up --no-build
-  exit 0
-fi
-echo "\t<============================BOT正在运行中,请稍等...============================>\n-) setting中使用了默认配置。\n-) 可在Adachi-BOT目录中使用docker-compose down关闭服务，docker-compose up -d启动服务。\n-) 可根据官方文档https://docs.adachi.top/config/#setting-yml重新设置你的配置，使用的指令可根据#help指令的结果对照在command.yml中修改。\n\t<======================以下是BOT服务的日志内容======================>"
+docker-compose up -d --build
+echo "\t<============================BOT正在运行中,请稍等...============================>\n-) setting中基本上使用了默认配置(初次使用未开启webConsole)。\n-) 可在Adachi-BOT目录中使用docker-compose down关闭服务，docker-compose up -d启动服务。\n-) 可根据官方文档https://docs.adachi.top/config/#setting-yml重新设置你的配置，使用的指令可根据#help指令的结果对照在command.yml中修改。\n\t<======================以下是BOT服务的日志内容======================>"
 echo "使用CTRL+C组合键即可结束日志查看."
 
 docker logs -f adachi-bot
