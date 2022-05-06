@@ -16,7 +16,7 @@ wget https://cdn.jsdelivr.net/gh/BennettChina/adachi-bot-installer@main/adachi_b
 常见问题：
 
 - node、git等软件下载失败，可以重新运行脚本重试
-- `node_module`可能安装失败，比如`puppeteer`可能会安装失败，此时可以使用`npm i`重新安装，然后`npm start`启动服务。
+- `node_module`可能安装失败，比如`puppeteer`可能会安装失败，此时可以使用`npm i`重新安装，然后`npm run win-start`启动服务。
 - `docker`环境由于测试时的网络问题下载软件失败暂时未测试，有问题提issue反馈。
 - 系统禁止运行脚本，可使用 `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force` 然后在执行命令。
 
