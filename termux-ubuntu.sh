@@ -2,6 +2,38 @@
 # android ubuntu
 # 2022年4月16日
 
+ask() {
+    char_count='0'
+    prompt="${1}: "
+    reply=''
+    while IFS='' read -n '1' -p "${prompt}" -r -s 'char'
+    do
+        case "${char}" in
+            # Handles NULL
+            ( $'\000' )
+            break
+            ;;
+            # Handles BACKSPACE and DELETE
+            ( $'\010' | $'\177' )
+            if (( char_count > 0 )); then
+                prompt=$'\b \b'
+                reply="${reply%?}"
+                (( char_count-- ))
+            else
+                prompt=''
+            fi
+            ;;
+            ( * )
+            prompt='*'
+            reply+="${char}"
+            (( char_count++ ))
+            ;;
+        esac
+    done
+    printf '\n' >&2
+    printf '%s\n' "${reply}"
+}
+
 # 安装nodejs
 echo '安装nodejs开始';
 if ! type node >/dev/null 2>&1; then
