@@ -231,7 +231,7 @@ webConsole:
   tcpLoggerPort: 54921
   jwtSecret: ${jwt_secret}
 atBOT: false
-addFriend: false"  >  ${work_dir}/config/setting.yml
+addFriend: true"  >  ${work_dir}/config/setting.yml
 
 echo "cookies:
   - ${mys_cookie}"  >  ${work_dir}/config/cookies.yml

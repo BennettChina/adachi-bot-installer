@@ -426,7 +426,7 @@ webConsole:
   tcpLoggerPort: ${logger_port}
   jwtSecret: ${jwt_secret}
 atBOT: false
-addFriend: false
+addFriend: true
 "
 
 New-Item -Path .\config\cookies.yml -ItemType File -Force -Value "cookies:
