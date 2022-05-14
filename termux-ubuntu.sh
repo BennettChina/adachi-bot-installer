@@ -225,6 +225,7 @@ privateIntervalTime: 2000
 helpMessageStyle: message
 logLevel: info
 dbPort: 56379
+dbPassword: \"\"
 webConsole:
   enable: false
   consolePort: 80

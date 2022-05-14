@@ -223,6 +223,7 @@ auto-aof-rewrite-percentage 100
 auto-aof-rewrite-min-size 64mb
 
 port 6379
+#requirepass yourpassword
 dir ./"
     Write-Output "正在启动redis中..."
     redis-server --service-install redis.windows.conf --loglevel verbose
@@ -420,6 +421,7 @@ privateIntervalTime: 2000
 helpMessageStyle: message
 logLevel: info
 dbPort: ${redis_port}
+dbPassword: `"`"
 webConsole:
   enable: false
   consolePort: ${console_port}
