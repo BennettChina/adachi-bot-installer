@@ -87,12 +87,11 @@ else
 	ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 fi
 
-os=$(cat /etc/*release | grep ^NAME | tr -d 'NAME="') > /dev/null 2>&1
-
 if [ -x "$(command -v git)" ]; then
 	echo "git已经安装，跳过!"
 else
 	echo "安装git中..."
+	os=$(cat /etc/*release | grep ^NAME | tr -d 'NAME="') > /dev/null 2>&1
 	if [ -x "$(command -v yum)" ]; then
 	  yum install -y git
 	elif [ -x "$(command -v apt-get)" ] && [ "$os" == 'Ubuntu' ]; then
@@ -206,7 +205,11 @@ select plugin in "音乐插件" "抽卡分析" "圣遗物评分" "聊天插件" 
       break
     ;;
     *)
-      echo "插件选择结束，你选择了${use_plugins}"
+      if [ "${use_plugins}" ]; then
+        echo "插件选择结束，你选择了${use_plugins}"
+        break
+      fi
+      echo "插件选择结束，你未选择插件!"
       break
     ;;
   esac

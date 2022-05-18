@@ -150,7 +150,11 @@ select plugin in "音乐插件" "抽卡分析" "圣遗物评分" "聊天插件" 
       break
     ;;
     *)
-      echo "插件选择结束，你选择了${use_plugins}"
+      if [ "${use_plugins}" ]; then
+        echo "插件选择结束，你选择了${use_plugins}"
+        break
+      fi
+      echo "插件选择结束，你未选择插件!"
       break
     ;;
   esac

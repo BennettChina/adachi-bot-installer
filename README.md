@@ -1,12 +1,20 @@
 # adachi-bot-installer
 [SilveryStar/Adachi-BOT](https://github.com/SilveryStar/Adachi-BOT)的一键部署脚本
 
-## Linux/macOS
+## Linux
 
-`Linux`环境可以直接执行下面的命令，将通过安装`Docker`、`docker-compose`的方式运行BOT，`macOS`需要自行安装`docker`(最好是比较新的版本，因为自带了`docker-compose`)，[docker下载地址](https://www.docker.com/get-started) 。
+`Linux`环境可以直接执行下面的命令，将通过安装`Docker`、`docker-compose`的方式运行BOT
 
 ```sh
-wget https://cdn.jsdelivr.net/gh/BennettChina/adachi-bot-installer@main/adachi_bot_install.sh -O adachi_bot_install.sh && sudo bash adachi_bot_install.sh && rm adachi_bot_install.sh
+wget https://ghproxy.com/https://raw.githubusercontent.com/BennettChina/adachi-bot-installer/main/adachi_bot_install.sh -O adachi_bot_install.sh && sudo bash adachi_bot_install.sh && rm adachi_bot_install.sh
+```
+
+## macOS
+
+`macOS`需要自行安装`docker`(最好是比较新的版本，因为自带了`docker-compose`)，[docker下载地址](https://www.docker.com/get-started) 。
+
+```shell
+curl -L -# https://ghproxy.com/https://raw.githubusercontent.com/BennettChina/adachi-bot-installer/main/adachi_bot_install.sh -o adachi_bot_install.sh && bash adachi_bot_install.sh && rm adachi_bot_install.sh
 ```
 
 ## Windows
@@ -21,7 +29,7 @@ wget https://cdn.jsdelivr.net/gh/BennettChina/adachi-bot-installer@main/adachi_b
 - 系统禁止运行脚本，可使用 `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force` 然后在执行命令。
 
 ```powershell
-iwr "https://cdn.jsdelivr.net/gh/BennettChina/adachi-bot-installer`@main/adachi_bot_install.ps1" -O .\adachi_bot_install.ps1; .\adachi_bot_install.ps1; rm .\adachi_bot_install.ps1
+iwr "https://ghproxy.com/https://raw.githubusercontent.com/BennettChina/adachi-bot-installer/main/adachi_bot_install.ps1" -O .\adachi_bot_install.ps1; .\adachi_bot_install.ps1; rm .\adachi_bot_install.ps1
 ```
 
 ## Android
@@ -48,13 +56,12 @@ cd ~/Termux-Linux/Ubuntu
 启动系统后再执行下面的命令(脚本除已选择的配置其他均使用的都是官方的默认配置，可根据 [官方文档](https://docs.adachi.top/config/) 自定义配置)
 
 ```shell
-wget https://cdn.jsdelivr.net/gh/BennettChina/adachi-bot-installer@main/termux-ubuntu.sh -O - | bash -
+wget https://ghproxy.com/https://raw.githubusercontent.com/BennettChina/adachi-bot-installer/main/termux-ubuntu.sh -O termux-ubuntu.sh && sudo bash termux-ubuntu.sh && rm termux-ubuntu.sh
 ```
 
 
 ## 感谢
 
-- 感谢[jsdelivr](https://www.jsdelivr.com/)提供的镜像加速.
 - 感谢[daocloud](https://get.daocloud.io/#install-compose)提供的镜像加速.
 - 感谢[GithubProxy](https://ghproxy.com/)提供的镜像加速.
 - 参考了[pcrbot/hoshino-installer](https://github.com/pcrbot/hoshino-installer)的脚本写法.

@@ -316,7 +316,14 @@ while ($loop)
         }
         Default {
             $loop = $false
-            Write-Output "插件选择结束，您选择了 $use_plugins"
+            if ("$use_plugins")
+            {
+                Write-Output "插件选择结束，您未选择插件!"
+            }
+            else
+            {
+                Write-Output "插件选择结束，您选择了 $use_plugins"
+            }
             Set-Location $work_dir
         }
     }
