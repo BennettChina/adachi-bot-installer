@@ -451,7 +451,7 @@ if ($run_with_docker_compose -and $use_analysis_plugin)
     New-Item -Path .\Dockerfile -ItemType File -Force -Value "FROM silverystar/centos-puppeteer-env
 
 ENV LANG en_US.utf8
-RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && yum install -y git && npm config set registry https://registry.npmmirror.com && mkdir -p /usr/share/fonts/chinese && chmod -R 755 /usr/share/fonts/chinese && curl -L -# `"https://source.hibennett.cn/MiSans-Light.ttf`" -o `"/usr/share/fonts/chinese/MiSans-Light.ttf`" && cd /usr/share/fonts/chinese && mkfontscale
+RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && yum install -y git && npm config set registry https://registry.npmmirror.com && yum makecache && yum -y install wqy-microhei-fonts
 
 COPY . /bot
 WORKDIR /bot
