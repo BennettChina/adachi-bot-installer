@@ -264,7 +264,6 @@ while ($loop)
         2 {
             git clone https://ghproxy.com/https://github.com/wickedll/genshin_draw_analysis.git --depth=1
             $use_plugins="${use_plugins}"+" [analysis]"
-            $use_analysis_plugin= $true
             Write-Output "抽卡分析插件已下载，使用方式请访问 https://github.com/wickedll/genshin_draw_analysis"
             Write-Output "您已选择 $use_plugins"
         }
@@ -292,13 +291,13 @@ while ($loop)
         7{
             git clone https://ghproxy.com/https://github.com/BennettChina/hot-news.git --depth=1
             use_plugins="${use_plugins} "+" [热点新闻订阅插件]"
+            $use_news_plugin= $true
             Write-Output "热点新闻订阅插件已下载，使用方式请访问 https://github.com/BennettChina/hot-news"
         }
         "all" {
             git clone -b music https://ghproxy.com/https://github.com/SilveryStar/Adachi-Plugin.git --depth=1 music
             Write-Output "音乐插件已下载，使用方式请访问 https://github.com/SilveryStar/Adachi-Plugin/tree/music"
             git clone https://ghproxy.com/https://github.com/wickedll/genshin_draw_analysis.git --depth=1
-            $use_analysis_plugin=$true
             Write-Output "抽卡分析插件已下载，使用方式请访问 https://github.com/wickedll/genshin_draw_analysis"
             git clone https://ghproxy.com/https://github.com/wickedll/genshin_rating.git --depth=1
             Write-Output "圣遗物评分插件已下载，使用方式请访问 https://github.com/wickedll/genshin_rating"
@@ -310,6 +309,7 @@ while ($loop)
             Write-Output "设置入群欢迎词插件已下载，使用方式请访问 https://github.com/BennettChina/group_helper"
             git clone https://ghproxy.com/https://github.com/BennettChina/hot-news.git --depth=1
             Write-Output "热点新闻订阅插件已下载，使用方式请访问 https://github.com/BennettChina/hot-news"
+            $use_news_plugin=$true
             Write-Output "已为你下载全部插件!"
             $loop = $false
             Set-Location $work_dir
@@ -445,7 +445,7 @@ New-Item -Path .\config\genshin.yml -ItemType File -Force -Value "cardWeaponStyl
 cardProfile: random
 serverPort: ${genshin_port}"
 
-if ($run_with_docker_compose -and $use_analysis_plugin)
+if ($run_with_docker_compose -and $use_news_plugin)
 {
     #优化Dockerfile
     New-Item -Path .\Dockerfile -ItemType File -Force -Value "FROM silverystar/centos-puppeteer-env

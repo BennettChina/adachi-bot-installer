@@ -157,7 +157,6 @@ select plugin in "音乐插件" "抽卡分析" "圣遗物评分" "聊天插件" 
     "抽卡分析")
       git clone https://ghproxy.com/https://github.com/wickedll/genshin_draw_analysis.git --depth=1
       use_plugins="${use_plugins}"" [抽卡分析插件]"
-      use_analysis_plugin=true
       echo "抽卡分析插件已下载，使用方式请访问 https://github.com/wickedll/genshin_draw_analysis"
     ;;
     "圣遗物评分")
@@ -183,13 +182,13 @@ select plugin in "音乐插件" "抽卡分析" "圣遗物评分" "聊天插件" 
     "热点新闻订阅插件")
       git clone https://ghproxy.com/https://github.com/BennettChina/hot-news.git --depth=1
       use_plugins="${use_plugins} "" [热点新闻订阅插件]"
+      use_news_plugin=true
       echo "热点新闻订阅插件已下载，使用方式请访问 https://github.com/BennettChina/hot-news"
     ;;
     "all")
       git clone -b music https://ghproxy.com/https://github.com/SilveryStar/Adachi-Plugin.git --depth=1 music
       echo "音乐插件已下载，使用方式请访问 https://github.com/SilveryStar/Adachi-Plugin/tree/music"
       git clone https://ghproxy.com/https://github.com/wickedll/genshin_draw_analysis.git --depth=1
-      use_analysis_plugin=true
       echo "抽卡分析插件已下载，使用方式请访问 https://github.com/wickedll/genshin_draw_analysis"
       git clone https://ghproxy.com/https://github.com/wickedll/genshin_rating.git --depth=1
       echo "圣遗物评分插件已下载，使用方式请访问 https://github.com/wickedll/genshin_rating"
@@ -201,6 +200,7 @@ select plugin in "音乐插件" "抽卡分析" "圣遗物评分" "聊天插件" 
       echo "设置入群欢迎词插件已下载，使用方式请访问 https://github.com/BennettChina/group_helper"
       git clone https://ghproxy.com/https://github.com/BennettChina/hot-news.git --depth=1
       echo "热点新闻订阅插件已下载，使用方式请访问 https://github.com/BennettChina/hot-news"
+      use_news_plugin=true
       echo "已为你下载全部插件!"
       break
     ;;
@@ -306,7 +306,7 @@ cardProfile: random
 serverPort: 58612"  >  ${work_dir}/Adachi-BOT/config/genshin.yml
 
 #优化Dockerfile
-if [ "${use_analysis_plugin}" == true ]; then
+if [ "${use_news_plugin}" == true ]; then
 	echo "FROM silverystar/centos-puppeteer-env
 
 ENV LANG en_US.utf8
