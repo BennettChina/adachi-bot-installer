@@ -184,12 +184,11 @@ if ($install_node)
     # set env
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
     Write-Output "node 安装成功."
-
-    # set npm mirror
-    if ($source_cn)
-    {
-        npm config set registry https://registry.npmmirror.com
-    }
+}
+# set npm mirror
+if ($source_cn)
+{
+    npm config set registry https://registry.npmmirror.com
 }
 if ($install_git)
 {
@@ -243,9 +242,8 @@ Write-Output "请选择需要使用的插件"
 Write-Output "1) 音乐插件"
 Write-Output "2) 抽卡分析插件"
 Write-Output "3) 圣遗物评分插件"
-Write-Output "4) 聊天插件"
+Write-Output "4) 云原神签到插件"
 Write-Output "5) 搜图插件"
-Write-Output "6) 设置入群欢迎词插件"
 Write-Output "6) 设置入群欢迎词插件"
 Write-Output "7) 热点新闻订阅插件"
 $loop = $true
@@ -274,9 +272,9 @@ while ($loop)
             Write-Output "您已选择 $use_plugins"
         }
         4{
-            git clone https://ghproxy.com/https://github.com/Extrwave/Chat-Plugins.git --depth=1
-            use_plugins="${use_plugins} "+" [聊天插件]"
-            Write-Output "聊天插件已下载，使用方式请访问 https://github.com/Extrwave/Chat-Plugins"
+            git clone https://ghproxy.com/https://github.com/Extrwave/cloud_genshin.git --depth=1
+            use_plugins="${use_plugins} "+" [云原神签到插件]"
+            Write-Output "云原神签到插件已下载，使用方式请访问 https://github.com/Extrwave/cloud_genshin"
         }
         5{
             git clone https://ghproxy.com/https://github.com/MarryDream/pic_search.git --depth=1
@@ -301,8 +299,8 @@ while ($loop)
             Write-Output "抽卡分析插件已下载，使用方式请访问 https://github.com/wickedll/genshin_draw_analysis"
             git clone https://ghproxy.com/https://github.com/wickedll/genshin_rating.git --depth=1
             Write-Output "圣遗物评分插件已下载，使用方式请访问 https://github.com/wickedll/genshin_rating"
-            git clone https://ghproxy.com/https://github.com/Extrwave/Chat-Plugins.git --depth=1
-            Write-Output "聊天插件已下载，使用方式请访问 https://github.com/Extrwave/Chat-Plugins"
+            git clone https://ghproxy.com/https://github.com/Extrwave/cloud_genshin.git --depth=1
+            Write-Output "云原神签到插件已下载，使用方式请访问 https://github.com/Extrwave/cloud_genshin"
             git clone https://ghproxy.com/https://github.com/MarryDream/pic_search.git --depth=1
             Write-Output "搜图插件已下载，使用方式请访问 https://github.com/MarryDream/pic_search"
             git clone https://ghproxy.com/https://github.com/BennettChina/group_helper.git --depth=1
@@ -436,6 +434,7 @@ webConsole:
   jwtSecret: ${jwt_secret}
 atBOT: false
 addFriend: true
+autoChat: false
 "
 
 New-Item -Path .\config\cookies.yml -ItemType File -Force -Value "cookies:

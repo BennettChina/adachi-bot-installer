@@ -70,14 +70,14 @@ fi
 if [ -x "$(command -v docker-compose)" ]; then
 	echo "docker-compose已经安装, 跳过!"
 elif [ "$(uname)" == 'Darwin' ]; then
-  docker compose version
-  if [ "$?" != "0" ]; then
+  if ! docker compose version; then
     echo "Docker Desktop版本太低，请更新后再使用本脚本!"
     exit 1
   fi
 else
 	echo "安装docker-compose中..."
 	wget "https://ghproxy.com/https://github.com/docker/compose/releases/download/v2.3.0/docker-compose-$(uname -s)-$(uname -m)" -O "/usr/local/bin/docker-compose"
+	# shellcheck disable=SC2012
 	if [ ! -f "/usr/local/bin/docker-compose" ] || [ "$(ls -l /usr/local/bin/docker-compose | awk '{print $5}')" -lt 10000000 ]; then
 		# 尝试从daocloud镜像源再次下载
 		echo "从github下载docker-compose失败，将从镜像地址重试。"
@@ -104,6 +104,7 @@ else
 	  if [ ! -f "/usr/local/etc/pkg/repos/FreeBSD.conf" ]; then
 	      # 添加镜像加速
 	      mkdir -p "/usr/local/etc/pkg/repos"
+	      # shellcheck disable=SC2016
 	      echo 'FreeBSD: {
                 url: "pkg+http://mirrors.ustc.edu.cn/freebsd-pkg/${ABI}/quarterly",
               }' > "/usr/local/etc/pkg/repos/FreeBSD.conf"
@@ -144,10 +145,10 @@ fi
 git clone https://ghproxy.com/https://github.com/SilveryStar/Adachi-BOT.git --depth=1
 echo "adachi-bot拉取成功."
 
-echo "开始选择安装插件，回复编号选择(回复all选择全部,回复0结束选择)..."
+echo "开始选择安装插件，回复编号选择(回复0结束选择)..."
 cd "Adachi-BOT/src/plugins"
 use_plugins=""
-select plugin in "音乐插件" "抽卡分析" "圣遗物评分" "聊天插件" "搜图插件" "设置入群欢迎词插件" "热点新闻订阅插件"; do
+select plugin in "all" "音乐插件" "抽卡分析" "圣遗物评分" "云原神签到插件" "搜图插件" "设置入群欢迎词插件" "热点新闻订阅插件"; do
   case $plugin in
     "音乐插件")
       git clone -b music https://ghproxy.com/https://github.com/SilveryStar/Adachi-Plugin.git --depth=1 music
@@ -164,10 +165,10 @@ select plugin in "音乐插件" "抽卡分析" "圣遗物评分" "聊天插件" 
       use_plugins="${use_plugins} "" [圣遗物评分插件]"
       echo "圣遗物评分插件已下载，使用方式请访问 https://github.com/wickedll/genshin_rating"
     ;;
-    "聊天插件")
-      git clone https://ghproxy.com/https://github.com/Extrwave/Chat-Plugins.git --depth=1
-      use_plugins="${use_plugins} "" [聊天插件]"
-      echo "聊天插件已下载，使用方式请访问 https://github.com/Extrwave/Chat-Plugins"
+    "云原神签到插件")
+      git clone https://ghproxy.com/https://github.com/Extrwave/cloud_genshin.git --depth=1
+      use_plugins="${use_plugins} "" [云原神签到插件]"
+      echo "云原神签到插件已下载，使用方式请访问 https://github.com/Extrwave/cloud_genshin"
     ;;
     "搜图插件")
       git clone https://ghproxy.com/https://github.com/MarryDream/pic_search.git --depth=1
@@ -192,8 +193,8 @@ select plugin in "音乐插件" "抽卡分析" "圣遗物评分" "聊天插件" 
       echo "抽卡分析插件已下载，使用方式请访问 https://github.com/wickedll/genshin_draw_analysis"
       git clone https://ghproxy.com/https://github.com/wickedll/genshin_rating.git --depth=1
       echo "圣遗物评分插件已下载，使用方式请访问 https://github.com/wickedll/genshin_rating"
-      git clone https://ghproxy.com/https://github.com/Extrwave/Chat-Plugins.git --depth=1
-      echo "聊天插件已下载，使用方式请访问 https://github.com/Extrwave/Chat-Plugins"
+      git clone https://ghproxy.com/https://github.com/Extrwave/cloud_genshin.git --depth=1
+      echo "云原神签到插件已下载，使用方式请访问 https://github.com/Extrwave/cloud_genshin"
       git clone https://ghproxy.com/https://github.com/MarryDream/pic_search.git --depth=1
       echo "搜图插件已下载，使用方式请访问 https://github.com/MarryDream/pic_search"
       git clone https://ghproxy.com/https://github.com/BennettChina/group_helper.git --depth=1
@@ -217,8 +218,8 @@ done
 cd "${work_dir}"
 
 echo "开始创建配置文件..."
-if [ ! -d "${work_dir}/Adachi-BOT/config" ]; then mkdir -p ${work_dir}/Adachi-BOT/config; fi
-cd  ${work_dir}/Adachi-BOT/config && touch setting.yml commands.yml cookies.yml genshin.yml && cd ${work_dir}
+if [ ! -d "${work_dir}/Adachi-BOT/config" ]; then mkdir -p "${work_dir}/Adachi-BOT/config"; fi
+cd  "${work_dir}/Adachi-BOT/config" && touch setting.yml commands.yml cookies.yml genshin.yml && cd "${work_dir}"
 
 
 echo "请选择机器人登录平台(输入编号):"
@@ -262,7 +263,7 @@ select login_type in "密码" "扫码"; do
 	break
 done
 read -p "请输入机器人主人账号: " master_num
-echo '获取米游社cookie方式:
+printf '获取米游社cookie方式:
 将下面的代码复制并添加到一个书签中，书签名称自定义。然后在已登录的米游社网页中点击刚才的书签即可将cookie复制到剪切板中.
 javascript:(function () {let domain = document.domain;let cookie = document.cookie;const text = document.createElement("textarea");text.hidden=true;text.value = cookie;document.body.appendChild(text);text.select();text.setSelectionRange(0, 99999);navigator.clipboard.writeText(text.value).then(()=>{alert("domain:"+domain+"\ncookie is in clipboard");});document.body.removeChild(text);})();
 '
@@ -295,15 +296,16 @@ webConsole:
   tcpLoggerPort: 54921
   jwtSecret: ${jwt_secret}
 atBOT: false
-addFriend: true"  >  ${work_dir}/Adachi-BOT/config/setting.yml
+addFriend: true
+autoChat: false"  >  "${work_dir}/Adachi-BOT/config/setting.yml"
 
 echo "cookies:
-  - ${mys_cookie}"  >  ${work_dir}/Adachi-BOT/config/cookies.yml
+  - ${mys_cookie}"  >  "${work_dir}/Adachi-BOT/config/cookies.yml"
 
 
 echo "cardWeaponStyle: normal
 cardProfile: random
-serverPort: 58612"  >  ${work_dir}/Adachi-BOT/config/genshin.yml
+serverPort: 58612"  >  "${work_dir}/Adachi-BOT/config/genshin.yml"
 
 #优化Dockerfile
 if [ "${use_news_plugin}" == true ]; then
@@ -315,13 +317,13 @@ RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && yum install -y g
 COPY . /bot
 WORKDIR /bot
 RUN npm i puppeteer --unsafe-perm=true --allow-root
-CMD nohup sh -c \"npm i && npm run docker-start\"" > ${work_dir}/Adachi-BOT/Dockerfile
+CMD nohup sh -c \"npm i && npm run docker-start\"" > "${work_dir}/Adachi-BOT/Dockerfile"
 fi
 
 echo "开始运行BOT..."
 cd Adachi-BOT
 docker-compose up -d --build
-echo "\t<============================BOT正在运行中,请稍等...============================>\n-) setting中基本上使用了默认配置(初次使用未开启webConsole)。\n-) 可在Adachi-BOT目录中使用docker-compose down关闭服务，docker-compose up -d启动服务。\n-) 可根据官方文档https://docs.adachi.top/config/#setting-yml重新设置你的配置，使用的指令可根据#help指令的结果对照在command.yml中修改。\n\t<======================以下是BOT服务的日志内容======================>"
+printf "\t<============================BOT正在运行中,请稍等...============================>\n-) setting中基本上使用了默认配置(初次使用未开启webConsole)。\n-) 可在Adachi-BOT目录中使用docker-compose down关闭服务，docker-compose up -d启动服务。\n-) 可根据官方文档https://docs.adachi.top/config/#setting-yml重新设置你的配置，使用的指令可根据#help指令的结果对照在command.yml中修改。\n\t<======================以下是BOT服务的日志内容======================>"
 echo "使用CTRL+C组合键即可结束日志查看."
 
 docker logs -f adachi-bot

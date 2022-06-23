@@ -13,10 +13,16 @@ wget https://ghproxy.com/https://raw.githubusercontent.com/BennettChina/adachi-b
 
 ## macOS
 
-`macOS`需要自行安装`docker`(最好是比较新的版本，因为自带了`docker-compose`)，[docker下载地址](https://www.docker.com/get-started) 。
+`macOS`如果用Docker模式需要自行安装`docker`(最好是比较新的版本，因为自带了`docker-compose`)，[docker下载地址](https://www.docker.com/get-started) 。
 
 ```shell
 curl -L -# https://ghproxy.com/https://raw.githubusercontent.com/BennettChina/adachi-bot-installer/main/unix-docker-install.sh -o unix-docker-install.sh && bash unix-docker-install.sh && rm unix-docker-install.sh
+```
+
+不使用Docker模式可以使用下面的命令安装
+
+```shell
+curl -L -# https://ghproxy.com/https://raw.githubusercontent.com/BennettChina/adachi-bot-installer/main/macos-install.sh -o macos-install.sh && bash macos-install.sh && rm macos-install.sh
 ```
 
 ## Windows
@@ -25,6 +31,7 @@ curl -L -# https://ghproxy.com/https://raw.githubusercontent.com/BennettChina/ad
 
 常见问题：
 
+- 如果遇到 `ghproxy.com` 无法解析的问题可尝试在浏览器访问 https://ghproxy.com
 - node、git等软件下载失败，可以重新运行脚本重试
 - `node_module`可能安装失败，比如`puppeteer`可能会安装失败，此时可以使用`npm i`重新安装，然后`npm run win-start`启动服务。
 - `docker`环境由于测试时的网络问题下载软件失败暂时未测试，有问题提issue反馈。

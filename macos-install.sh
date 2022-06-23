@@ -31,49 +31,63 @@ ask() {
   printf '%s\n' "${reply}"
 }
 
-os=$(cat /etc/*release | grep ^NAME | tr -d 'NAME="') >/dev/null 2>&1
+printf "===============================================================================
+\t 本脚本将为您在您的Mac上安装以下软件:
+\t 1) xcode-select: Homebrew依赖此工具
+\t 2) Homebrew: 一个macOS系统的包管理工具
+\t 3) nodejs: JavaScript 运行环境
+\t 4) Adachi-BOT: 开源项目https://github.com/SilveryStar/Adachi-BOT
+\t 5) redis: 一个高速缓存数据库
+==============================================================================="
+
+printf "安装xcode-select"
+if ! type xcode-select >/dev/null 2>&1; then
+  xcode-select --install
+  printf "xcode-select安装完成"
+else
+  printf "xcode-select已安装"
+fi
+
+# 添加brew的镜像地址环境变量
+echo '
+export HOMEBREW_BREW_GIT_REMOTE="https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/brew.git"
+export HOMEBREW_CORE_GIT_REMOTE="https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-core.git"
+export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles"
+' >>"$HOME/.zprofile"
+source "$HOME/.zprofile"
+
+# 从镜像下载安装脚本并安装 Homebrew
+printf "开始安装Homebrew"
+if ! type brew >/dev/null 2>&1; then
+  git clone --depth=1 https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/install.git brew-install
+  /bin/bash brew-install/install.sh
+  rm -rf brew-install
+
+  if [ "$(uname -m)" == "arm64" ]; then
+    # shellcheck disable=SC2016
+    test -r "$HOME/.bash_profile" && echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >>"$HOME/.bash_profile"
+    # shellcheck disable=SC2016
+    test -r "$HOME/.zprofile" && echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >>"$HOME/.zprofile"
+  fi
+  printf "Homebrew安装完成"
+else
+  printf "Homebrew已安装."
+fi
+
 # 安装nodejs
 echo '安装nodejs开始'
 if ! type node >/dev/null 2>&1; then
-  if [ "$os" == "Ubuntu" ] || [ "$os" == "Debian" ]; then
-    wget https://deb.nodesource.com/setup_14.x -O - | bash -
-    apt-get install -y nodejs
-  elif [ "$os" == "Centos" ]; then
-    wget https://rpm.nodesource.com/setup_14.x -O - | bash -
-    yum install -y nodejs
+  curl -o- https://ghproxy.com/https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+  if [ -x "$(command -v nvm)" ]; then
+    nvm use 14
+  else
+    brew install node@14
   fi
+  echo '安装nodejs完成'
 else
   echo 'nodejs已安装'
 fi
 npm config set registry https://registry.npmmirror.com
-echo '安装nodejs完成'
-
-# 安装chromium
-echo '安装chromium开始'
-if [ "$os" == "Ubuntu" ] || [ "$os" == "Debian" ]; then
-  apt install chromium-browser -y
-elif [ "$os" == "Centos" ]; then
-  yum install -y chromium
-fi
-echo '安装chromium完成'
-
-# 安装中文字体
-echo '安装中文字体开始'
-if [ "$os" == "Ubuntu" ] || [ "$os" == "Debian" ]; then
-  apt install -y --force-yes --no-install-recommends fonts-wqy-microhei
-elif [ "$os" == "Centos" ]; then
-  yum -y install wqy-microhei-fonts
-fi
-echo '安装中文字体完成'
-
-# 安装git
-echo '安装git开始'
-if [ "$os" == "Ubuntu" ] || [ "$os" == "Debian" ]; then
-  apt install git -y
-elif [ "$os" == "Centos" ]; then
-  yum -y install git
-fi
-echo '安装git完成'
 
 # 克隆项目
 echo '克隆Adachi-BOT开始'
@@ -91,16 +105,16 @@ work_dir=$(pwd)
 
 # 安装并运行redis
 echo '安装redis开始'
-apt-get install redis -y
-mv "/etc/redis/redis.conf" "/etc/redis/redis.conf.bak"
+brew install redis
+mv "/usr/local/etc/redis.conf" "/usr/local/etc/redis.conf.bak"
 database="${work_dir}/database"
-cp "redis.conf" "/etc/redis/redis.conf"
+cp "redis.conf" "/usr/local/etc/redis.conf"
 if [ ! -d "${database}" ]; then
   mkdir -p "${database}"
 fi
-sed -i "s|dir /data/|dir ${database}|" "/etc/redis/redis.conf"
-echo "daemonize yes" >>"/etc/redis/redis.conf"
-redis-server /etc/redis/redis.conf
+sed -i "" "s|dir /data/|dir ${database}|" "/usr/local/etc/redis.conf"
+echo "daemonize yes" >>"/usr/local/etc/redis.conf"
+redis-server /usr/local/etc/redis.conf
 echo '安装redis完成'
 
 echo "开始选择安装插件，回复编号选择(回复0结束选择)..."
@@ -109,7 +123,7 @@ cd "src/plugins" || {
   exit 1
 }
 use_plugins=""
-select plugin in "all" "音乐插件" "抽卡分析" "圣遗物评分" "云原神签到插件" "搜图插件" "设置入群欢迎词插件" "热点新闻订阅插件"; do
+select plugin in "all" "音乐插件" "抽卡分析" "云原神签到插件" "圣遗物评分" "搜图插件" "设置入群欢迎词插件" "热点新闻订阅插件"; do
   case $plugin in
   "音乐插件")
     git clone -b music https://ghproxy.com/https://github.com/SilveryStar/Adachi-Plugin.git --depth=1 music
@@ -121,15 +135,15 @@ select plugin in "all" "音乐插件" "抽卡分析" "圣遗物评分" "云原�
     use_plugins="${use_plugins}"" [抽卡分析插件]"
     echo "抽卡分析插件已下载，使用方式请访问 https://github.com/wickedll/genshin_draw_analysis"
     ;;
+  "云原神签到插件")
+    git clone https://ghproxy.com/https://github.com/Extrwave/cloud_genshin.git --depth=1
+    use_plugins="${use_plugins}"" [云原神签到插件]"
+    echo "云原神签到插件已下载，使用方式请访问 https://github.com/Extrwave/cloud_genshin"
+    ;;
   "圣遗物评分")
     git clone https://ghproxy.com/https://github.com/wickedll/genshin_rating.git --depth=1
     use_plugins="${use_plugins} "" [圣遗物评分插件]"
     echo "圣遗物评分插件已下载，使用方式请访问 https://github.com/wickedll/genshin_rating"
-    ;;
-  "云原神签到插件")
-    git clone https://ghproxy.com/https://github.com/Extrwave/cloud_genshin.git --depth=1
-    use_plugins="${use_plugins} "" [云原神签到插件]"
-    echo "云原神签到插件已下载，使用方式请访问 https://github.com/Extrwave/cloud_genshin"
     ;;
   "搜图插件")
     git clone https://ghproxy.com/https://github.com/MarryDream/pic_search.git --depth=1
@@ -151,10 +165,10 @@ select plugin in "all" "音乐插件" "抽卡分析" "圣遗物评分" "云原�
     echo "音乐插件已下载，使用方式请访问 https://github.com/SilveryStar/Adachi-Plugin/tree/music"
     git clone https://ghproxy.com/https://github.com/wickedll/genshin_draw_analysis.git --depth=1
     echo "抽卡分析插件已下载，使用方式请访问 https://github.com/wickedll/genshin_draw_analysis"
-    git clone https://ghproxy.com/https://github.com/wickedll/genshin_rating.git --depth=1
-    echo "圣遗物评分插件已下载，使用方式请访问 https://github.com/wickedll/genshin_rating"
     git clone https://ghproxy.com/https://github.com/Extrwave/cloud_genshin.git --depth=1
     echo "云原神签到插件已下载，使用方式请访问 https://github.com/Extrwave/cloud_genshin"
+    git clone https://ghproxy.com/https://github.com/wickedll/genshin_rating.git --depth=1
+    echo "圣遗物评分插件已下载，使用方式请访问 https://github.com/wickedll/genshin_rating"
     git clone https://ghproxy.com/https://github.com/MarryDream/pic_search.git --depth=1
     echo "搜图插件已下载，使用方式请访问 https://github.com/MarryDream/pic_search"
     git clone https://ghproxy.com/https://github.com/BennettChina/group_helper.git --depth=1
@@ -227,13 +241,13 @@ select login_type in "密码" "扫码"; do
   break
 done
 read -p "请输入机器人主人账号: " master_num
-print '获取米游社cookie方式:
+printf '获取米游社cookie方式:
 将下面的代码复制并添加到一个书签中，书签名称自定义。然后在已登录的米游社网页中点击刚才的书签即可将cookie复制到剪切板中.
 javascript:(function () {let domain = document.domain;let cookie = document.cookie;const text = document.createElement("textarea");text.hidden=true;text.value = cookie;document.body.appendChild(text);text.select();text.setSelectionRange(0, 99999);navigator.clipboard.writeText(text.value).then(()=>{alert("domain:"+domain+"\ncookie is in clipboard");});document.body.removeChild(text);})();
 '
 read -p "请输入一个米游社cookie: " mys_cookie
 
-jwt_secret="$(tr -dc 'a-zA-Z0-9' </dev/urandom | fold -w 16 | head -n 1)"
+jwt_secret=$(LC_ALL=C tr -dc "[:alnum:]" < /dev/urandom | head -c 16)
 
 echo "qrcode: ${qrcode}
 number: ${qq_num}
