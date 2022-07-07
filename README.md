@@ -33,13 +33,13 @@ curl -L -# https://ghproxy.com/https://raw.githubusercontent.com/BennettChina/ad
 
 ## Windows
 
-`Windows`环境可以使用下面的命令，需要以管理员的权限打开`PowerShell`，然后`cd 你想要安装的目录路径`再输入下面的命令并运行，**注意：运行后窗口不可关闭！！！**
+`Windows`环境可以使用下面的命令，需要以管理员的权限打开`PowerShell`，然后`cd 你想要安装的目录路径`再输入下面的命令并运行。
 
 常见问题：
 
 - 如果遇到 `ghproxy.com` 无法解析的问题可尝试在浏览器访问 https://ghproxy.com
 - node、git等软件下载失败，可以重新运行脚本重试
-- `node_module`可能安装失败，比如`puppeteer`可能会安装失败，此时可以使用`npm i`重新安装，然后`npm run win-start`启动服务。
+- `node_module`可能安装失败，比如`puppeteer`可能会安装失败，此时可以使用`npm i`重新安装，然后`npm start`启动服务。
 - `docker`环境由于测试时的网络问题下载软件失败暂时未测试，有问题提issue反馈。
 - 系统禁止运行脚本，可使用 `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force` 然后在执行命令。
 

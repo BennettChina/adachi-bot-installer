@@ -474,8 +474,10 @@ if ($run_with_docker_compose)
 else
 {
     npm i
-    Write-Output "\t<============================服务已经在启动中了...,以下是BOT服务的日志内容(请不要关闭该窗口,初次使用未启用webConsole)======================>"
-    npm run win-start
+    npm i pm2 -g
+    Write-Output "\t<============================服务已经在启动中了...,以下是BOT服务的日志内容(CTRL+C结束查看日志,初次使用未启用webConsole)======================>"
+    npm start
+    pm2 logs --lines 100
 }
 
 if ($run_with_docker_compose)
