@@ -244,77 +244,85 @@ Write-Output "2) 抽卡分析插件"
 Write-Output "3) 圣遗物评分插件"
 Write-Output "4) 云原神签到插件"
 Write-Output "5) 搜图插件"
-Write-Output "6) 设置入群欢迎词插件"
+Write-Output "6) 群聊助手插件"
 Write-Output "7) 热点新闻订阅插件"
+Write-Output "8) 茉莉插件(实验性功能插件)"
 $loop = $true
 Set-Location "src\plugins"
 while ($loop)
 {
-    $user_in = Read-Host "请输入编号,输入0结束:"
+    $user_in = Read-Host "请输入编号,输入0结束,输入all选择全部"
     Switch ($user_in)
     {
         1 {
             git clone -b music https://ghproxy.com/https://github.com/SilveryStar/Adachi-Plugin.git --depth=1 music
             $use_plugins = "$use_plugins " + "[music]"
-            Write-Output "音乐插件已下载，使用方式请访问 https://github.com/SilveryStar/Adachi-Plugin/tree/music"
+            Write-Output "[音乐插件]已下载，使用方式请访问 https://github.com/SilveryStar/Adachi-Plugin/tree/music"
             Write-Output "您已选择 $use_plugins"
         }
         2 {
             git clone https://ghproxy.com/https://github.com/wickedll/genshin_draw_analysis.git --depth=1
             $use_plugins="${use_plugins}"+" [analysis]"
-            Write-Output "抽卡分析插件已下载，使用方式请访问 https://github.com/wickedll/genshin_draw_analysis"
+            Write-Output "[抽卡分析插件]已下载，使用方式请访问 https://github.com/wickedll/genshin_draw_analysis"
             Write-Output "您已选择 $use_plugins"
         }
         3 {
             git clone https://ghproxy.com/https://github.com/wickedll/genshin_rating.git --depth=1
             $use_plugins="${use_plugins} "+" [rating]"
-            Write-Output "圣遗物评分插件已下载，使用方式请访问 https://github.com/wickedll/genshin_rating"
+            Write-Output "[圣遗物评分插件]已下载，使用方式请访问 https://github.com/wickedll/genshin_rating"
             Write-Output "您已选择 $use_plugins"
         }
         4{
             git clone https://ghproxy.com/https://github.com/Extrwave/cloud_genshin.git --depth=1
             use_plugins="${use_plugins} "+" [云原神签到插件]"
-            Write-Output "云原神签到插件已下载，使用方式请访问 https://github.com/Extrwave/cloud_genshin"
+            Write-Output "[云原神签到插件]已下载，使用方式请访问 https://github.com/Extrwave/cloud_genshin"
         }
         5{
             git clone https://ghproxy.com/https://github.com/MarryDream/pic_search.git --depth=1
             use_plugins="${use_plugins} "+" [搜图插件]"
-            Write-Output "搜图插件已下载，使用方式请访问 https://github.com/MarryDream/pic_search"
+            Write-Output "[搜图插件]已下载，使用方式请访问 https://github.com/MarryDream/pic_search"
         }
         6{
             git clone https://ghproxy.com/https://github.com/BennettChina/group_helper.git --depth=1
-            use_plugins="${use_plugins} "+" [设置入群欢迎词插件]"
-            Write-Output "设置入群欢迎词插件已下载，使用方式请访问 https://github.com/BennettChina/group_helper"
+            use_plugins="${use_plugins} "+" [群聊助手插件]"
+            Write-Output "[群聊助手插件]已下载，使用方式请访问 https://github.com/BennettChina/group_helper"
         }
         7{
             git clone https://ghproxy.com/https://github.com/BennettChina/hot-news.git --depth=1
             use_plugins="${use_plugins} "+" [热点新闻订阅插件]"
             $use_news_plugin= $true
-            Write-Output "热点新闻订阅插件已下载，使用方式请访问 https://github.com/BennettChina/hot-news"
+            Write-Output "[热点新闻订阅插件]已下载，使用方式请访问 https://github.com/BennettChina/hot-news"
+        }
+        8{
+            git clone https://ghproxy.com/https://github.com/MarryDream/mari-plugin.git --depth=1
+            use_plugins="${use_plugins} "+" [茉莉插件]"
+            Write-Output "[茉莉插件]已下载，使用方式请访问 https://github.com/MarryDream/mari-plugin"
         }
         "all" {
             git clone -b music https://ghproxy.com/https://github.com/SilveryStar/Adachi-Plugin.git --depth=1 music
-            Write-Output "音乐插件已下载，使用方式请访问 https://github.com/SilveryStar/Adachi-Plugin/tree/music"
+            Write-Output "[音乐插件]已下载，使用方式请访问 https://github.com/SilveryStar/Adachi-Plugin/tree/music"
             git clone https://ghproxy.com/https://github.com/wickedll/genshin_draw_analysis.git --depth=1
-            Write-Output "抽卡分析插件已下载，使用方式请访问 https://github.com/wickedll/genshin_draw_analysis"
+            Write-Output "[抽卡分析插件]已下载，使用方式请访问 https://github.com/wickedll/genshin_draw_analysis"
             git clone https://ghproxy.com/https://github.com/wickedll/genshin_rating.git --depth=1
-            Write-Output "圣遗物评分插件已下载，使用方式请访问 https://github.com/wickedll/genshin_rating"
+            Write-Output "[圣遗物评分插件]已下载，使用方式请访问 https://github.com/wickedll/genshin_rating"
             git clone https://ghproxy.com/https://github.com/Extrwave/cloud_genshin.git --depth=1
-            Write-Output "云原神签到插件已下载，使用方式请访问 https://github.com/Extrwave/cloud_genshin"
+            Write-Output "[云原神签到插件]已下载，使用方式请访问 https://github.com/Extrwave/cloud_genshin"
             git clone https://ghproxy.com/https://github.com/MarryDream/pic_search.git --depth=1
-            Write-Output "搜图插件已下载，使用方式请访问 https://github.com/MarryDream/pic_search"
+            Write-Output "[搜图插件]已下载，使用方式请访问 https://github.com/MarryDream/pic_search"
             git clone https://ghproxy.com/https://github.com/BennettChina/group_helper.git --depth=1
-            Write-Output "设置入群欢迎词插件已下载，使用方式请访问 https://github.com/BennettChina/group_helper"
+            Write-Output "[群聊助手插件]已下载，使用方式请访问 https://github.com/BennettChina/group_helper"
             git clone https://ghproxy.com/https://github.com/BennettChina/hot-news.git --depth=1
-            Write-Output "热点新闻订阅插件已下载，使用方式请访问 https://github.com/BennettChina/hot-news"
+            Write-Output "[热点新闻订阅插件]已下载，使用方式请访问 https://github.com/BennettChina/hot-news"
             $use_news_plugin=$true
+            git clone https://ghproxy.com/https://github.com/MarryDream/mari-plugin.git --depth=1
+            Write-Output "[茉莉插件]已下载，使用方式请访问 https://github.com/MarryDream/mari-plugin"
             Write-Output "已为你下载全部插件!"
             $loop = $false
             Set-Location $work_dir
         }
-        Default {
+        0 {
             $loop = $false
-            if ("$use_plugins")
+            if (!$use_plugins)
             {
                 Write-Output "插件选择结束，您未选择插件!"
             }
@@ -344,7 +352,7 @@ while ($loop)
     Write-Output "3）安卓手表"
     Write-Output "4）MacOS"
     Write-Output "5）iPad"
-    $user_in = Read-Host "请输入编号:"
+    $user_in = Read-Host "请输入编号"
     Switch ($user_in)
     {
         1 {
