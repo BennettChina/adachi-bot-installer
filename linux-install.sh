@@ -91,16 +91,29 @@ work_dir=$(pwd)
 
 # 安装并运行redis
 echo '安装redis开始'
-apt-get install redis -y
-mv "/etc/redis/redis.conf" "/etc/redis/redis.conf.bak"
-database="${work_dir}/database"
-cp "redis.conf" "/etc/redis/redis.conf"
-if [ ! -d "${database}" ]; then
-  mkdir -p "${database}"
+if [ "$os" == "Ubuntu" ] || [ "$os" == "Debian" ]; then
+  apt-get install redis -y
+  mv "/etc/redis/redis.conf" "/etc/redis/redis.conf.bak"
+  database="${work_dir}/database"
+  cp "redis.conf" "/etc/redis/redis.conf"
+  if [ ! -d "${database}" ]; then
+    mkdir -p "${database}"
+  fi
+  sed -i "s|dir /data/|dir ${database}|" "/etc/redis/redis.conf"
+  echo "daemonize yes" >>"/etc/redis/redis.conf"
+  redis-server /etc/redis/redis.conf
+elif [ "$os" == "Centos" ]; then
+  yum install redis -y
+  mv "/etc/redis.conf" "/etc/redis.conf.bak"
+  database="${work_dir}/database"
+  cp "redis.conf" "/etc/redis.conf"
+  if [ ! -d "${database}" ]; then
+    mkdir -p "${database}"
+  fi
+  sed -i "s|dir /data/|dir ${database}|" "/etc/redis.conf"
+  echo "daemonize yes" >>"/etc/redis.conf"
+  redis-server /etc/redis.conf
 fi
-sed -i "s|dir /data/|dir ${database}|" "/etc/redis/redis.conf"
-echo "daemonize yes" >>"/etc/redis/redis.conf"
-redis-server /etc/redis/redis.conf
 echo '安装redis完成'
 
 echo "开始选择安装插件，回复编号选择(回复0结束选择)..."
