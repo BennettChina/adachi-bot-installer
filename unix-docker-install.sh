@@ -183,7 +183,6 @@ select plugin in "all" "音乐插件" "抽卡分析" "圣遗物评分" "云原�
     "热点新闻订阅插件")
       git clone https://ghproxy.com/https://github.com/BennettChina/hot-news.git --depth=1
       use_plugins="${use_plugins} "" [热点新闻订阅插件]"
-      use_news_plugin=true
       echo "热点新闻订阅插件已下载，使用方式请访问 https://github.com/BennettChina/hot-news"
     ;;
     "all")
@@ -201,7 +200,6 @@ select plugin in "all" "音乐插件" "抽卡分析" "圣遗物评分" "云原�
       echo "设置入群欢迎词插件已下载，使用方式请访问 https://github.com/BennettChina/group_helper"
       git clone https://ghproxy.com/https://github.com/BennettChina/hot-news.git --depth=1
       echo "热点新闻订阅插件已下载，使用方式请访问 https://github.com/BennettChina/hot-news"
-      use_news_plugin=true
       echo "已为你下载全部插件!"
       break
     ;;
@@ -306,19 +304,6 @@ echo "cookies:
 echo "cardWeaponStyle: normal
 cardProfile: random
 serverPort: 58612"  >  "${work_dir}/Adachi-BOT/config/genshin.yml"
-
-#优化Dockerfile
-if [ "${use_news_plugin}" == true ]; then
-	echo "FROM silverystar/centos-puppeteer-env
-
-ENV LANG en_US.utf8
-RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && yum install -y git && npm config set registry https://registry.npmmirror.com && yum makecache && yum -y install wqy-microhei-fonts
-
-COPY . /bot
-WORKDIR /bot
-RUN npm i puppeteer --unsafe-perm=true --allow-root
-CMD nohup sh -c \"npm i && npm run docker-start\"" > "${work_dir}/Adachi-BOT/Dockerfile"
-fi
 
 echo "开始运行BOT..."
 cd Adachi-BOT

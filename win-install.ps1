@@ -290,7 +290,6 @@ while ($loop)
         7{
             git clone https://ghproxy.com/https://github.com/BennettChina/hot-news.git --depth=1
             use_plugins="${use_plugins} "+" [热点新闻订阅插件]"
-            $use_news_plugin= $true
             Write-Output "[热点新闻订阅插件]已下载，使用方式请访问 https://github.com/BennettChina/hot-news"
         }
         8{
@@ -313,7 +312,6 @@ while ($loop)
             Write-Output "[群聊助手插件]已下载，使用方式请访问 https://github.com/BennettChina/group_helper"
             git clone https://ghproxy.com/https://github.com/BennettChina/hot-news.git --depth=1
             Write-Output "[热点新闻订阅插件]已下载，使用方式请访问 https://github.com/BennettChina/hot-news"
-            $use_news_plugin=$true
             git clone https://ghproxy.com/https://github.com/MarryDream/mari-plugin.git --depth=1
             Write-Output "[茉莉插件]已下载，使用方式请访问 https://github.com/MarryDream/mari-plugin"
             Write-Output "已为你下载全部插件!"
@@ -451,20 +449,6 @@ New-Item -Path .\config\cookies.yml -ItemType File -Force -Value "cookies:
 New-Item -Path .\config\genshin.yml -ItemType File -Force -Value "cardWeaponStyle: normal
 cardProfile: random
 serverPort: ${genshin_port}"
-
-if ($run_with_docker_compose -and $use_news_plugin)
-{
-    #优化Dockerfile
-    New-Item -Path .\Dockerfile -ItemType File -Force -Value "FROM silverystar/centos-puppeteer-env
-
-ENV LANG en_US.utf8
-RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && yum install -y git && npm config set registry https://registry.npmmirror.com && yum makecache && yum -y install wqy-microhei-fonts
-
-COPY . /bot
-WORKDIR /bot
-RUN npm i puppeteer --unsafe-perm=true --allow-root
-CMD nohup sh -c `"npm i && npm run docker-start`""
-}
 
 # 启动程序
 if ($run_with_docker_compose)
