@@ -1,17 +1,20 @@
 ﻿# this file should be saved as "UTF-8 with BOM"
 $ErrorActionPreference = "Stop"
 
-function Expand-ZIPFile($file, $destination) {
+function Expand-ZIPFile($file, $destination)
+{
     $file = (Resolve-Path -Path $file).Path
     $destination = (Resolve-Path -Path $destination).Path
     $shell = new-object -com shell.application
     $zip = $shell.NameSpace($file)
-    foreach ($item in $zip.items()) {
+    foreach ($item in $zip.items())
+    {
         $shell.Namespace($destination).copyhere($item)
     }
 }
 
-if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator"))
+{
     write-Warning "需要以管理员权限运行."
     exit
 }
@@ -207,7 +210,7 @@ if ($install_redis)
     New-Item -Path ".\redis" -ItemType Directory
     Expand-ZIPFile redis.zip -Destination ".\redis\"
     Remove-Item redis.zip
-    $redis_path = $(Get-Item .).FullName + "\redis"
+    $redis_path = $( Get-Item . ).FullName + "\redis"
     $env:Path += ";$redis_path"
     $env:Path += ";$redis_path" + "redis.windows.conf"
     Set-Location ".\redis"
@@ -238,100 +241,62 @@ Write-Output "adachi-bot clone success."
 Set-Location Adachi-BOT
 $work_dir = Get-Item .
 
-Write-Output "请选择需要使用的插件"
-Write-Output "1) 音乐插件"
-Write-Output "2) 抽卡分析插件"
-Write-Output "3) 圣遗物评分插件"
-Write-Output "4) 云原神签到插件"
-Write-Output "5) 搜图插件"
-Write-Output "6) 群聊助手插件"
-Write-Output "7) 热点新闻订阅插件"
-Write-Output "8) 茉莉插件(实验性功能插件)"
-$loop = $true
 Set-Location "src\plugins"
-while ($loop)
+$plugins = Invoke-RestMethod -Uri "https://source.hibennett.cn/bot/plugins.json"
+Write-Output "以下插件名称将使用英文名称(中文在win乱码，见谅)，可在 https://github.com/SilveryStar/Adachi-Plugin 查看插件描述"
+Write-Output "请选择需要使用的插件"
+$i = 1
+foreach ($item in $plugins)
+{
+    Write-Output $( "$i) " + $item.en_name )
+    $i++
+}
+
+$use_plugins = ""
+while ($true)
 {
     $user_in = Read-Host "请输入编号,输入0结束,输入all选择全部"
-    Switch ($user_in)
+    if ($user_in -eq "0")
     {
-        1 {
-            git clone -b music https://ghproxy.com/https://github.com/SilveryStar/Adachi-Plugin.git --depth=1 music
-            $use_plugins = "$use_plugins " + "[music]"
-            Write-Output "[音乐插件]已下载，使用方式请访问 https://github.com/SilveryStar/Adachi-Plugin/tree/music"
-            Write-Output "您已选择 $use_plugins"
-        }
-        2 {
-            git clone https://ghproxy.com/https://github.com/wickedll/genshin_draw_analysis.git --depth=1
-            $use_plugins="${use_plugins}"+" [analysis]"
-            Write-Output "[抽卡分析插件]已下载，使用方式请访问 https://github.com/wickedll/genshin_draw_analysis"
-            Write-Output "您已选择 $use_plugins"
-        }
-        3 {
-            git clone https://ghproxy.com/https://github.com/wickedll/genshin_rating.git --depth=1
-            $use_plugins="${use_plugins} "+" [rating]"
-            Write-Output "[圣遗物评分插件]已下载，使用方式请访问 https://github.com/wickedll/genshin_rating"
-            Write-Output "您已选择 $use_plugins"
-        }
-        4{
-            git clone https://ghproxy.com/https://github.com/Extrwave/cloud_genshin.git --depth=1
-            use_plugins="${use_plugins} "+" [云原神签到插件]"
-            Write-Output "[云原神签到插件]已下载，使用方式请访问 https://github.com/Extrwave/cloud_genshin"
-        }
-        5{
-            git clone https://ghproxy.com/https://github.com/MarryDream/pic_search.git --depth=1
-            use_plugins="${use_plugins} "+" [搜图插件]"
-            Write-Output "[搜图插件]已下载，使用方式请访问 https://github.com/MarryDream/pic_search"
-        }
-        6{
-            git clone https://ghproxy.com/https://github.com/BennettChina/group_helper.git --depth=1
-            use_plugins="${use_plugins} "+" [群聊助手插件]"
-            Write-Output "[群聊助手插件]已下载，使用方式请访问 https://github.com/BennettChina/group_helper"
-        }
-        7{
-            git clone https://ghproxy.com/https://github.com/BennettChina/hot-news.git --depth=1
-            use_plugins="${use_plugins} "+" [热点新闻订阅插件]"
-            Write-Output "[热点新闻订阅插件]已下载，使用方式请访问 https://github.com/BennettChina/hot-news"
-        }
-        8{
-            git clone https://ghproxy.com/https://github.com/MarryDream/mari-plugin.git --depth=1
-            use_plugins="${use_plugins} "+" [茉莉插件]"
-            Write-Output "[茉莉插件]已下载，使用方式请访问 https://github.com/MarryDream/mari-plugin"
-        }
-        "all" {
-            git clone -b music https://ghproxy.com/https://github.com/SilveryStar/Adachi-Plugin.git --depth=1 music
-            Write-Output "[音乐插件]已下载，使用方式请访问 https://github.com/SilveryStar/Adachi-Plugin/tree/music"
-            git clone https://ghproxy.com/https://github.com/wickedll/genshin_draw_analysis.git --depth=1
-            Write-Output "[抽卡分析插件]已下载，使用方式请访问 https://github.com/wickedll/genshin_draw_analysis"
-            git clone https://ghproxy.com/https://github.com/wickedll/genshin_rating.git --depth=1
-            Write-Output "[圣遗物评分插件]已下载，使用方式请访问 https://github.com/wickedll/genshin_rating"
-            git clone https://ghproxy.com/https://github.com/Extrwave/cloud_genshin.git --depth=1
-            Write-Output "[云原神签到插件]已下载，使用方式请访问 https://github.com/Extrwave/cloud_genshin"
-            git clone https://ghproxy.com/https://github.com/MarryDream/pic_search.git --depth=1
-            Write-Output "[搜图插件]已下载，使用方式请访问 https://github.com/MarryDream/pic_search"
-            git clone https://ghproxy.com/https://github.com/BennettChina/group_helper.git --depth=1
-            Write-Output "[群聊助手插件]已下载，使用方式请访问 https://github.com/BennettChina/group_helper"
-            git clone https://ghproxy.com/https://github.com/BennettChina/hot-news.git --depth=1
-            Write-Output "[热点新闻订阅插件]已下载，使用方式请访问 https://github.com/BennettChina/hot-news"
-            git clone https://ghproxy.com/https://github.com/MarryDream/mari-plugin.git --depth=1
-            Write-Output "[茉莉插件]已下载，使用方式请访问 https://github.com/MarryDream/mari-plugin"
-            Write-Output "已为你下载全部插件!"
-            $loop = $false
-            Set-Location $work_dir
-        }
-        0 {
-            $loop = $false
-            if (!$use_plugins)
-            {
-                Write-Output "插件选择结束，您未选择插件!"
-            }
-            else
-            {
-                Write-Output "插件选择结束，您选择了 $use_plugins"
-            }
-            Set-Location $work_dir
-        }
+        Write-Output "结束选择插件，你选择了$use_plugins"
+        break
     }
+    if ($user_in -eq "all")
+    {
+        foreach ($item in $plugins)
+        {
+            $opt = ""
+            if ($null -ne $item.ref)
+            {
+                $opt = "-b$($item.ref)"
+            }
+            $alias = $item.alias
+            if ($null -eq $alias)
+            {
+                $alias = ""
+            }
+            git clone --depth=1 $opt $item.url $alias
+        }
+        Write-Output "结束选择插件，你选择了全部插件"
+        break
+    }
+
+    $item=$plugins[$($user_in - 1)]
+    $opt = ""
+    if ($null -ne $item.ref)
+    {
+        $opt = "-b$($item.ref)"
+    }
+    $alias = $item.alias
+    if ($null -eq $alias)
+    {
+        $alias = ""
+    }
+    git clone --depth=1 $opt $item.url $alias
+    $use_plugins = "$use_plugins $($item.en_name)"
 }
+
+Set-Location $work_dir
 
 Write-Output "开始创建配置文件..."
 if (!(Test-Path -Path "${work_dir}/config"))
@@ -379,13 +344,15 @@ $jwt_secret = -join ((65..90) + (97..122) | Get-Random -Count 16 | ForEach-Objec
 
 $qq_num = Read-Host "请输入机器人的QQ号"
 $loop = $true
-while($loop) {
+while ($loop)
+{
     Write-Output "请选择机器人登录方式"
     Write-Output "1) 密码登录"
     Write-Output "2) 扫码登录"
     $user_in = Read-Host "输入编号选择: "
     $loop = $false
-    Switch($user_in) {
+    Switch ($user_in)
+    {
         1 {
             $pwd_secure_str = Read-Host -AsSecureString "请输入机器人的QQ密码"
             $qq_password = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($pwd_secure_str))
@@ -410,7 +377,7 @@ javascript:(function () {let domain = document.domain;let cookie = document.cook
 $mys_cookie = Read-Host "请输入一个米游社cookie: "
 
 
-if(!($run_with_docker_compose))
+if (!($run_with_docker_compose))
 {
     $redis_port = 6379
     $logger_port = 4921
@@ -440,7 +407,6 @@ webConsole:
   jwtSecret: ${jwt_secret}
 atBOT: false
 addFriend: true
-autoChat: false
 "
 
 New-Item -Path .\config\cookies.yml -ItemType File -Force -Value "cookies:

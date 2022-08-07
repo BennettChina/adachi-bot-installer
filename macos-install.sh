@@ -31,6 +31,8 @@ ask() {
   printf '%s\n' "${reply}"
 }
 
+if [ "$(uname)" != 'Darwin' ]; then echo '不支持的操作系统!'; fi
+
 printf "===============================================================================
 \t 本脚本将为您在您的Mac上安装以下软件:
 \t 1) xcode-select: Homebrew依赖此工具
@@ -117,77 +119,79 @@ echo "daemonize yes" >>"/usr/local/etc/redis.conf"
 redis-server /usr/local/etc/redis.conf
 echo '安装redis完成'
 
-echo "开始选择安装插件，回复编号选择(回复0结束选择)..."
+# 安装jq解析json
+if ! type jq >/dev/null 2>&1; then
+  brew install jq
+fi
+
 cd "src/plugins" || {
   echo "BOT项目结构发生变化或者未完整克隆，可在GitHub中提交issue提醒脚本作者更新!"
   exit 1
 }
-use_plugins=""
-select plugin in "all" "音乐插件" "抽卡分析" "云原神签到插件" "圣遗物评分" "搜图插件" "设置入群欢迎词插件" "热点新闻订阅插件"; do
-  case $plugin in
-  "音乐插件")
-    git clone -b music https://ghproxy.com/https://github.com/SilveryStar/Adachi-Plugin.git --depth=1 music
-    use_plugins="${use_plugins} ""[音乐插件]"
-    echo "音乐插件已下载，使用方式请访问 https://github.com/SilveryStar/Adachi-Plugin/tree/music"
-    ;;
-  "抽卡分析")
-    git clone https://ghproxy.com/https://github.com/wickedll/genshin_draw_analysis.git --depth=1
-    use_plugins="${use_plugins}"" [抽卡分析插件]"
-    echo "抽卡分析插件已下载，使用方式请访问 https://github.com/wickedll/genshin_draw_analysis"
-    ;;
-  "云原神签到插件")
-    git clone https://ghproxy.com/https://github.com/Extrwave/cloud_genshin.git --depth=1
-    use_plugins="${use_plugins}"" [云原神签到插件]"
-    echo "云原神签到插件已下载，使用方式请访问 https://github.com/Extrwave/cloud_genshin"
-    ;;
-  "圣遗物评分")
-    git clone https://ghproxy.com/https://github.com/wickedll/genshin_rating.git --depth=1
-    use_plugins="${use_plugins} "" [圣遗物评分插件]"
-    echo "圣遗物评分插件已下载，使用方式请访问 https://github.com/wickedll/genshin_rating"
-    ;;
-  "搜图插件")
-    git clone https://ghproxy.com/https://github.com/MarryDream/pic_search.git --depth=1
-    use_plugins="${use_plugins} "" [搜图插件]"
-    echo "搜图插件已下载，使用方式请访问 https://github.com/MarryDream/pic_search"
-    ;;
-  "设置入群欢迎词插件")
-    git clone https://ghproxy.com/https://github.com/BennettChina/group_helper.git --depth=1
-    use_plugins="${use_plugins} "" [设置入群欢迎词插件]"
-    echo "设置入群欢迎词插件已下载，使用方式请访问 https://github.com/BennettChina/group_helper"
-    ;;
-  "热点新闻订阅插件")
-    git clone https://ghproxy.com/https://github.com/BennettChina/hot-news.git --depth=1
-    use_plugins="${use_plugins} "" [热点新闻订阅插件]"
-    echo "热点新闻订阅插件已下载，使用方式请访问 https://github.com/BennettChina/hot-news"
-    ;;
-  "all")
-    git clone -b music https://ghproxy.com/https://github.com/SilveryStar/Adachi-Plugin.git --depth=1 music
-    echo "音乐插件已下载，使用方式请访问 https://github.com/SilveryStar/Adachi-Plugin/tree/music"
-    git clone https://ghproxy.com/https://github.com/wickedll/genshin_draw_analysis.git --depth=1
-    echo "抽卡分析插件已下载，使用方式请访问 https://github.com/wickedll/genshin_draw_analysis"
-    git clone https://ghproxy.com/https://github.com/Extrwave/cloud_genshin.git --depth=1
-    echo "云原神签到插件已下载，使用方式请访问 https://github.com/Extrwave/cloud_genshin"
-    git clone https://ghproxy.com/https://github.com/wickedll/genshin_rating.git --depth=1
-    echo "圣遗物评分插件已下载，使用方式请访问 https://github.com/wickedll/genshin_rating"
-    git clone https://ghproxy.com/https://github.com/MarryDream/pic_search.git --depth=1
-    echo "搜图插件已下载，使用方式请访问 https://github.com/MarryDream/pic_search"
-    git clone https://ghproxy.com/https://github.com/BennettChina/group_helper.git --depth=1
-    echo "设置入群欢迎词插件已下载，使用方式请访问 https://github.com/BennettChina/group_helper"
-    git clone https://ghproxy.com/https://github.com/BennettChina/hot-news.git --depth=1
-    echo "热点新闻订阅插件已下载，使用方式请访问 https://github.com/BennettChina/hot-news"
-    echo "已为你下载全部插件!"
-    break
-    ;;
-  *)
-    if [ "${use_plugins}" ]; then
-      echo "插件选择结束，你选择了${use_plugins}"
-      break
-    fi
-    echo "插件选择结束，你未选择插件!"
-    break
-    ;;
-  esac
+echo "开始选择安装插件，回复编号选择(回复0结束选择,回复a全选)..."
+plugins=$(curl -s 'https://source.hibennett.cn/bot/plugins.json')
+i=1
+for k in $(jq -r '.[]|.name' <<<"$plugins"); do
+  echo "${i}) ${k}"
+  ((i++))
 done
+
+while true; do
+  echo -n "#? "
+  read -r inp
+  if [ "${inp}" == "0" ]; then
+    break
+  fi
+  if [ "${inp}" == "a" ]; then
+    # 下载全部插件
+    for k in $(jq -r 'keys|.[]' <<<"$plugins"); do
+      p=$(jq -r ".[${k}]" <<<"${plugins}")
+      ref=$(jq -r ".ref?" <<<"${p}")
+      opt=""
+      if [ "$ref" != "null" ]; then
+        opt="-b ${ref} "
+      fi
+      name=$(jq -r ".name" <<<"${p}")
+      url=$(jq -r ".url" <<<"${p}")
+      alias=$(jq -r ".alias" <<<"${p}")
+      if [ "${alias}" == "null" ]; then
+        alias=""
+      fi
+      original_url=$(jq -r ".original_url" <<<"${p}")
+      opt="${opt}${url} ${alias}"
+      # shellcheck disable=SC2086
+      git clone --depth=1 ${opt}
+      echo "${name}已下载，使用方式请访问 ${original_url}"
+      use_plugins="all"
+    done
+    break
+  fi
+  idx=$((inp - 1))
+  p=$(jq -r ".[${idx}]" <<<"${plugins}")
+  ref=$(jq -r ".ref?" <<<"${p}")
+  opt=""
+  if [ "$ref" != "null" ]; then
+    opt="-b ${ref} "
+  fi
+  name=$(jq -r ".name" <<<"${p}")
+  url=$(jq -r ".url" <<<"${p}")
+  alias=$(jq -r ".alias" <<<"${p}")
+  if [ "${alias}" == "null" ]; then
+    alias=""
+  fi
+  original_url=$(jq -r ".original_url" <<<"${p}")
+  opt="${opt}${url} ${alias}"
+  # shellcheck disable=SC2086
+  git clone --depth=1 ${opt}
+  echo "${name}已下载，使用方式请访问 ${original_url}"
+  use_plugins="${use_plugins}"" ${name}"
+done
+
+if [ "${use_plugins}" ]; then
+  echo "插件选择结束，你选择了:${use_plugins}"
+else
+  echo "插件选择结束，你未选择插件。"
+fi
 cd "${work_dir}" || {
   echo "插件安装完成，退出插件目录失败"
   exit 1
@@ -228,7 +232,8 @@ select platform_str in "安卓手机" "安卓Pad" "安卓手表" "MacOS" "iPad";
     ;;
   esac
 done
-read -p "请输入机器人的QQ号: " qq_num
+echo -n "请输入机器人的QQ号: "
+read -r qq_num
 echo "请选择登录方式:"
 select login_type in "密码" "扫码"; do
   if [ $login_type == "密码" ]; then
@@ -240,14 +245,16 @@ select login_type in "密码" "扫码"; do
   fi
   break
 done
-read -p "请输入机器人主人账号: " master_num
+echo -n "请输入机器人主人账号: "
+read -r master_num
 printf '获取米游社cookie方式:
 将下面的代码复制并添加到一个书签中，书签名称自定义。然后在已登录的米游社网页中点击刚才的书签即可将cookie复制到剪切板中.
 javascript:(function () {let domain = document.domain;let cookie = document.cookie;const text = document.createElement("textarea");text.hidden=true;text.value = cookie;document.body.appendChild(text);text.select();text.setSelectionRange(0, 99999);navigator.clipboard.writeText(text.value).then(()=>{alert("domain:"+domain+"\ncookie is in clipboard");});document.body.removeChild(text);})();
 '
-read -p "请输入一个米游社cookie: " mys_cookie
+echo -n "请输入一个米游社cookie: "
+read -r mys_cookie
 
-jwt_secret=$(LC_ALL=C tr -dc "[:alnum:]" < /dev/urandom | head -c 16)
+jwt_secret=$(LC_ALL=C tr -dc "[:alnum:]" </dev/urandom | head -c 16)
 
 echo "qrcode: ${qrcode}
 number: ${qq_num}
@@ -270,8 +277,7 @@ webConsole:
   tcpLoggerPort: 54921
   jwtSecret: ${jwt_secret}
 atBOT: false
-addFriend: true
-autoChat: false" >"${work_dir}/config/setting.yml"
+addFriend: true" >"${work_dir}/config/setting.yml"
 
 echo "cookies:
   - ${mys_cookie}" >"${work_dir}/config/cookies.yml"
