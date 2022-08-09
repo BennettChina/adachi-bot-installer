@@ -35,7 +35,7 @@ set -e
 
 if [ "$(uname)" != 'Linux' ] && [ "$(uname)" != 'Darwin' ]; then echo '不支持的操作系统!'; fi
 
-if [[ "$(uname)" == 'Linux' && $EUID == 0 ]]; then
+if [[ "$(uname)" == 'Linux' && $EUID != 0 ]]; then
   echo "请使用root账号运行该脚本！"
   exit 1
 fi
@@ -121,17 +121,17 @@ else
   elif [ -x "$(command -v dnf)" ]; then
     dnf install -y git
   elif [ -x "$(command -v pacman)" ]; then
-    pacman -S git
+    pacman -S git -y
   elif [ -x "$(command -v emerge)" ]; then
-    emerge --verbose dev-vcs/git
+    emerge --verbose dev-vcs/git -y
   elif [ -x "$(command -v zypper)" ]; then
-    zypper install git
+    zypper install git -y
   elif [ -x "$(command -v urpmi)" ]; then
-    urpmi git
+    urpmi git -y
   elif [ -x "$(command -v nix-env)" ]; then
-    nix-env -i git
+    nix-env -i git -y
   elif [ -x "$(command -v pkgutil)" ]; then
-    pkgutil -i git
+    pkgutil -i git -y
   elif [ -x "$(command -v pkg)" ]; then
     pkg install -y developer/versioning/git
   elif [ "$(command -v pkg_add)" ]; then
@@ -154,16 +154,36 @@ git clone https://ghproxy.com/https://github.com/SilveryStar/Adachi-BOT.git --de
 echo "adachi-bot拉取成功."
 
 # 安装jq解析json
+echo "开始安装jq解析json..."
 if ! type jq >/dev/null 2>&1; then
   if [ "$(uname)" == 'Darwin' ]; then
-    curl -L -# "https://ghproxy.com/https://github.com/stedolan/jq/releases/download/jq-1.6/jq-osx-amd64" -o "/usr/local/bin/jq"
-    chmod +x "/usr/local/bin/jq"
-    ln -s "/usr/local/bin/jq" "/usr/bin/jq"
+    if type brew >/dev/null 2>&1; then
+      brew install jq
+    elif type port >/dev/null 2>&1; then
+      echo "使用MacPort安装jq，可能需要sudo权限。"
+      sudo port install jq -y
+    else
+      curl -L -# "https://ghproxy.com/https://github.com/stedolan/jq/releases/download/jq-1.6/jq-osx-amd64" -o "/usr/local/bin/jq"
+      chmod +x "/usr/local/bin/jq"
+      ln -s "/usr/local/bin/jq" "/usr/bin/jq"
+    fi
   else
-    wget "https://ghproxy.com/https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64" -O "/usr/local/bin/jq"
-    chmod +x "/usr/local/bin/jq"
-    ln -s "/usr/local/bin/jq" "/usr/bin/jq"
+    if type apt-get >/dev/null 2>&1; then
+      apt-get install jq -y
+    elif type dnf >/dev/null 2>&1; then
+      dnf install jq -y
+    elif type zypper >/dev/null 2>&1; then
+      zypper install jq -y
+    elif type pacman >/dev/null 2>&1; then
+      pacman -S jq -y
+    else
+      wget "https://ghproxy.com/https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64" -O "/usr/local/bin/jq"
+      chmod +x "/usr/local/bin/jq"
+      ln -s "/usr/local/bin/jq" "/usr/bin/jq"
+    fi
   fi
+else
+  echo "jq已安装"
 fi
 
 cd "Adachi-BOT/src/plugins"

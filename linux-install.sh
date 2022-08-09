@@ -131,10 +131,23 @@ fi
 echo '安装redis完成'
 
 # 安装jq解析json
+echo "开始安装jq解析json..."
 if ! type jq >/dev/null 2>&1; then
-  wget "https://ghproxy.com/https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64" -O "/usr/local/bin/jq"
-  chmod +x "/usr/local/bin/jq"
-  ln -s "/usr/local/bin/jq" "/usr/bin/jq"
+  if type apt-get >/dev/null 2>&1; then
+    apt-get install jq -y
+  elif type dnf >/dev/null 2>&1; then
+    dnf install jq -y
+  elif type zypper >/dev/null 2>&1; then
+    zypper install jq -y
+  elif type pacman >/dev/null 2>&1; then
+    pacman -S jq -y
+  else
+    wget "https://ghproxy.com/https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64" -O "/usr/local/bin/jq"
+    chmod +x "/usr/local/bin/jq"
+    ln -s "/usr/local/bin/jq" "/usr/bin/jq"
+  fi
+else
+  echo "jq已安装"
 fi
 cd "src/plugins" || {
   echo "BOT项目结构发生变化或者未完整克隆，可在GitHub中提交issue提醒脚本作者更新!"
