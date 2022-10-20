@@ -114,7 +114,7 @@ if [[ "$os" == ubuntu* || "$os" == debian* ]]; then
     mkdir -p "${database}"
   fi
   sed -i "s|dir /data/|dir ${database}|" "/etc/redis/redis.conf"
-  echo "daemonize yes" >>"/etc/redis/redis.conf"
+  printf "\ndaemonize yes" >>"/etc/redis/redis.conf"
   redis-server /etc/redis/redis.conf
 elif [[ "$os" == centos* ]]; then
   yum install redis -y
@@ -125,7 +125,7 @@ elif [[ "$os" == centos* ]]; then
     mkdir -p "${database}"
   fi
   sed -i "s|dir /data/|dir ${database}|" "/etc/redis.conf"
-  echo "daemonize yes" >>"/etc/redis.conf"
+  printf "\ndaemonize yes" >>"/etc/redis.conf"
   redis-server /etc/redis.conf
 fi
 echo '安装redis完成'

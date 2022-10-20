@@ -115,7 +115,7 @@ if [ ! -d "${database}" ]; then
   mkdir -p "${database}"
 fi
 sed -i "" "s|dir /data/|dir ${database}|" "/usr/local/etc/redis.conf"
-echo "daemonize yes" >>"/usr/local/etc/redis.conf"
+printf "\ndaemonize yes" >>"/usr/local/etc/redis.conf"
 redis-server /usr/local/etc/redis.conf
 echo '安装redis完成'
 
