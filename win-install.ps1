@@ -281,6 +281,37 @@ while ($true)
         break
     }
 
+    if ($user_in.Contains(' ')) {
+        $arr = $user_in.Split(' ')
+        foreach ($word in $arr) {
+            if ($word -gt $i)
+            {
+                Write-Output "不存在${word}号插件."
+                continue
+            }
+            $item=$plugins[$($word - 1)]
+            $opt = ""
+            if ($null -ne $item.ref)
+            {
+                $opt = "-b$($item.ref)"
+            }
+            $alias = $item.alias
+            if ($null -eq $alias)
+            {
+                $alias = ""
+            }
+            git clone --depth=1 $opt $item.url $alias
+            $use_plugins = "$use_plugins $($item.en_name)"
+        }
+        break
+    }
+
+    if ($user_in -gt $i)
+    {
+        Write-Output "不存在${user_in}号插件，如果你要一次多选请用空格隔开."
+        continue
+    }
+
     $item=$plugins[$($user_in - 1)]
     $opt = ""
     if ($null -ne $item.ref)
@@ -385,13 +416,21 @@ if (!($run_with_docker_compose))
 }
 
 
-New-Item -Path .\config\setting.yml -ItemType File -Force -Value "qrcode: ${qr_code}
+New-Item -Path .\config\setting.yml -ItemType File -Force -Value "tip: 前往 https://docs.adachi.top/config 查看配置详情
+qrcode: ${qrcode}
 number: ${qq_num}
 password: ${qq_password}
 master: ${master_num}
 header: `"#`"
 platform: ${platform}
 atUser: false
+atBOT: false
+addFriend: true
+autoChat:
+  enable: false
+  type: 1
+  secretId: `"`"
+  secretKey: `"`"
 inviteAuth: master
 countThreshold: 60
 groupIntervalTime: 1500
@@ -405,8 +444,32 @@ webConsole:
   consolePort: ${console_port}
   tcpLoggerPort: ${logger_port}
   jwtSecret: ${jwt_secret}
-atBOT: false
-addFriend: true
+helpPort: 54919
+callTimes: 3
+fuzzyMatch: false
+matchPrompt: true
+useWhitelist: false
+banScreenSwipe:
+  enable: false
+  limit: 10
+  duration: 1800
+  prompt: true
+  promptMsg: 请不要刷屏哦~
+banHeavyAt:
+  enable: false
+  limit: 10
+  duration: 1800
+  prompt: true
+  promptMsg: 你at太多人了，会被讨厌的哦~
+ThresholdInterval: false
+ffmpegPath: `"`"
+ffprobePath: `"`"
+mailConfig:
+  platform: qq
+  user: 123456789@qq.com
+  authCode: `"`"
+  logoutSend: false
+  sendDelay: 5
 "
 
 New-Item -Path .\config\cookies.yml -ItemType File -Force -Value "cookies:

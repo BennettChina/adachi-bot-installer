@@ -225,6 +225,40 @@ while true; do
     done
     break
   fi
+  if [[ "$inp" =~ " " ]]; then
+    # shellcheck disable=SC2206
+    arr=($inp)
+    for m in "${arr[@]}"; do
+      if [[ $((m)) > $i ]]; then
+        echo "不存在${m}号插件."
+        continue
+      fi
+      idx=$((m - 1))
+      p=$(jq -r ".[${idx}]" <<<"${plugins}")
+      ref=$(jq -r ".ref?" <<<"${p}")
+      opt=""
+      if [ "$ref" != "null" ]; then
+        opt="-b ${ref} "
+      fi
+      name=$(jq -r ".name" <<<"${p}")
+      url=$(jq -r ".url" <<<"${p}")
+      alias=$(jq -r ".alias" <<<"${p}")
+      if [ "${alias}" == "null" ]; then
+        alias=""
+      fi
+      original_url=$(jq -r ".original_url" <<<"${p}")
+      opt="${opt}${url} ${alias}"
+      # shellcheck disable=SC2086
+      git clone --depth=1 ${opt}
+      echo "${name}已下载，使用方式请访问 ${original_url}"
+      use_plugins="${use_plugins}"" ${name}"
+    done
+    break
+  fi
+  if [[ $((inp)) > $i ]]; then
+    echo "不存在${inp}号插件，如果你要一次多选请用空格隔开."
+    continue
+  fi
   idx=$((inp - 1))
   p=$(jq -r ".[${idx}]" <<<"${plugins}")
   ref=$(jq -r ".ref?" <<<"${p}")
@@ -314,13 +348,21 @@ else
   jwt_secret="$(tr -dc 'a-zA-Z0-9' </dev/urandom | fold -w 16 | head -n 1)"
 fi
 
-echo "qrcode: ${qrcode}
+echo "tip: 前往 https://docs.adachi.top/config 查看配置详情
+qrcode: ${qrcode}
 number: ${qq_num}
 password: ${qq_password}
 master: ${master_num}
 header: \"#\"
 platform: ${platform}
 atUser: false
+atBOT: false
+addFriend: true
+autoChat:
+  enable: false
+  type: 1
+  secretId: \"\"
+  secretKey: \"\"
 inviteAuth: master
 countThreshold: 60
 groupIntervalTime: 1500
@@ -334,8 +376,32 @@ webConsole:
   consolePort: 80
   tcpLoggerPort: 54921
   jwtSecret: ${jwt_secret}
-atBOT: false
-addFriend: true" >"${work_dir}/Adachi-BOT/config/setting.yml"
+helpPort: 54919
+callTimes: 3
+fuzzyMatch: false
+matchPrompt: true
+useWhitelist: false
+banScreenSwipe:
+  enable: false
+  limit: 10
+  duration: 1800
+  prompt: true
+  promptMsg: 请不要刷屏哦~
+banHeavyAt:
+  enable: false
+  limit: 10
+  duration: 1800
+  prompt: true
+  promptMsg: 你at太多人了，会被讨厌的哦~
+ThresholdInterval: false
+ffmpegPath: \"\"
+ffprobePath: \"\"
+mailConfig:
+  platform: qq
+  user: 123456789@qq.com
+  authCode: \"\"
+  logoutSend: false
+  sendDelay: 5" >"${work_dir}/Adachi-BOT/config/setting.yml"
 
 echo "cookies:
   - ${mys_cookie}" >"${work_dir}/Adachi-BOT/config/cookies.yml"
