@@ -170,7 +170,7 @@ while true; do
     # shellcheck disable=SC2206
     arr=($inp)
     for m in "${arr[@]}"; do
-      if [[ $((m)) > $i ]]; then
+      if [[ $m -gt $i ]]; then
         echo "不存在${m}号插件."
         continue
       fi
@@ -196,7 +196,7 @@ while true; do
     done
     break
   fi
-  if [[ $((inp)) > $i ]]; then
+  if [[ $inp -gt $i ]]; then
     echo "不存在${inp}号插件，如果你要一次多选请用空格隔开."
     continue
   fi
@@ -356,5 +356,13 @@ echo "正在为您安装依赖..."
 npm i
 npm i pm2 -g
 echo "依赖已完成安装，将为您启动服务..."
+
+# 重新设置文件的用户组，让非ROOT用户后续自行修改文件不需要提权
+if [ "$SUDO_USER" ]; then
+  sudo chown -R "$(id -u "$SUDO_USER")":"$(id -u "$SUDO_USER")" .
+else
+  sudo chown -R "$(id -u "$USER")":"$(id -u "$USER")" .
+fi
+
 npm start
 pm2 log

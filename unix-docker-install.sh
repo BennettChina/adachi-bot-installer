@@ -56,22 +56,36 @@ elif [ "$(uname)" == 'Darwin' ]; then
 else
   echo "安装docker中..."
   wget https://get.docker.com -O - | bash -s docker --mirror Aliyun
-  mkdir -p "/etc/docker" && touch "/etc/docker/daemon.json"
-  echo '{
-  "registry-mirrors" : [
-    "https://ajxzc7hl.mirror.aliyuncs.com",
-    "https://registry.docker-cn.com",
-    "http://docker.mirrors.ustc.edu.cn",
-    "http://hub-mirror.c.163.com",
-    "https://mirror.ccs.tencentyun.com"
-  ],
-  "debug" : false,
-  "experimental" : true
-}' >"/etc/docker/daemon.json"
-  systemctl start docker
-  # 开机自启动
-  systemctl enable docker
-  echo "安装docker成功！"
+  if ! [ "$(getent group docker)" ]; then
+    #添加docker用户组
+    groupadd docker
+  fi
+  if [ "$SUDO_USER" ]; then
+    #如果是sudo模式则将sudo用户加入组中
+    gpasswd -a "$SUDO_USER" docker
+  else
+    #将登陆用户加入到docker用户组中
+    gpasswd -a "$USER" docker
+  fi
+  #更新用户组
+  newgrp docker <<EOF
+    mkdir -p "/etc/docker" && touch "/etc/docker/daemon.json"
+    echo '{
+    "registry-mirrors" : [
+      "https://ajxzc7hl.mirror.aliyuncs.com",
+      "https://registry.docker-cn.com",
+      "http://docker.mirrors.ustc.edu.cn",
+      "http://hub-mirror.c.163.com",
+      "https://mirror.ccs.tencentyun.com"
+    ],
+    "debug" : false,
+    "experimental" : true
+  }' >"/etc/docker/daemon.json"
+    systemctl start docker
+    # 开机自启动
+    systemctl enable docker
+    echo "安装docker成功！"
+EOF
 fi
 
 use_docker_plugin=false
@@ -229,7 +243,7 @@ while true; do
     # shellcheck disable=SC2206
     arr=($inp)
     for m in "${arr[@]}"; do
-      if [[ $((m)) > $i ]]; then
+      if [[ $m -gt $i ]]; then
         echo "不存在${m}号插件."
         continue
       fi
@@ -255,7 +269,7 @@ while true; do
     done
     break
   fi
-  if [[ $((inp)) > $i ]]; then
+  if [[ $inp -gt $i ]]; then
     echo "不存在${inp}号插件，如果你要一次多选请用空格隔开."
     continue
   fi
@@ -412,6 +426,14 @@ serverPort: 58612" >"${work_dir}/Adachi-BOT/config/genshin.yml"
 
 echo "开始运行BOT..."
 cd Adachi-BOT
+
+# 重新设置文件的用户组，让非ROOT用户后续自行修改文件不需要提权
+if [ "$SUDO_USER" ]; then
+  sudo chown -R "$(id -u "$SUDO_USER")":"$(id -u "$SUDO_USER")" .
+else
+  sudo chown -R "$(id -u "$USER")":"$(id -u "$USER")" .
+fi
+
 if [ "${use_docker_plugin}" == "true" ]; then
   docker compose up -d --build
 else
