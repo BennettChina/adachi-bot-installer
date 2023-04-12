@@ -284,7 +284,7 @@ while ($true)
     if ($user_in.Contains(' ')) {
         $arr = $user_in.Split(' ')
         foreach ($word in $arr) {
-            if ($word -gt $i)
+            if ([int]$word -gt [int]$i)
             {
                 Write-Output "不存在${word}号插件."
                 continue
@@ -306,7 +306,7 @@ while ($true)
         break
     }
 
-    if ($user_in -gt $i)
+    if ([int]$user_in -gt [int]$i)
     {
         Write-Output "不存在${user_in}号插件，如果你要一次多选请用空格隔开."
         continue
