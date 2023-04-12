@@ -214,6 +214,7 @@ if ($install_redis)
     $env:Path += ";$redis_path"
     $env:Path += ";$redis_path" + "redis.windows.conf"
     Set-Location ".\redis"
+    New-Item -Path ".\database" -ItemType Directory
     New-Item -Path .\redis.windows.conf -ItemType File -Force -Value "stop-writes-on-bgsave-error no
 rdbcompression no
 dbfilename dump.rdb
@@ -226,13 +227,13 @@ auto-aof-rewrite-min-size 64mb
 
 port 6379
 #requirepass yourpassword
-dir ./"
+dir ./database/"
     Write-Output "正在启动redis中..."
     redis-server --service-install redis.windows.conf --loglevel verbose
     redis-server --service-start
     Set-Location ..
 
-    Write-Output "redis已成功在后台运行, 端口是6379."
+    Write-Output "redis已成功在后台运行, 端口是6379, 数据将存储在${redis_path}\database目录中。"
 }
 
 git clone $adachi_bot_repo_url --depth=1
