@@ -187,11 +187,11 @@ if ($install_node)
     # set env
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
     Write-Output "node 安装成功."
-}
-# set npm mirror
-if ($source_cn)
-{
-    npm config set registry https://registry.npmmirror.com
+    # set npm mirror
+    if ($source_cn)
+    {
+        npm config set registry https://registry.npmmirror.com
+    }
 }
 if ($install_git)
 {
