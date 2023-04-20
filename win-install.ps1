@@ -83,18 +83,23 @@ catch [System.Management.Automation.CommandNotFoundException]
     Write-Output "未安装docker将使用pm2方式启动服务"
 }
 
-try
+if ($run_with_docker)
 {
-    docker compose version
-    if ($LASTEXITCODE = "0")
+    try
     {
-        Write-Output "使用的高版本docker自带docker-compose,将使用docker-compose方式启动服务"
-        $run_with_docker_compose = $true
+        docker compose version
+        if ($LASTEXITCODE = "0")
+        {
+            Write-Output "使用的高版本docker自带docker-compose,将使用docker-compose方式启动服务"
+            $run_with_docker_compose = $true
+        }
+        else
+        {
+            Write-Output "使用的Docker版本太低，请更新后再使用本脚本."
+            exit
+        }
     }
-}
-catch [System.Management.Automation.CommandNotFoundException]
-{
-    if ($run_with_docker)
+    catch [System.Management.Automation.CommandNotFoundException]
     {
         Write-Output "使用的Docker版本太低，请更新后再使用本脚本."
         exit
@@ -163,9 +168,6 @@ if ($source_cn)
     $git = "https://mirrors.huaweicloud.com/git-for-windows/v2.35.1.windows.1/Git-2.35.1-64-bit.exe"
     $redis = "https://ghproxy.com/https://github.com/microsoftarchive/redis/releases/download/win-3.0.504/Redis-x64-3.0.504.zip"
     $adachi_bot_repo_url = "https://ghproxy.com/https://github.com/SilveryStar/Adachi-BOT.git"
-    $music_repo_url = "https://ghproxy.com/https://github.com/SilveryStar/Adachi-Plugin.git"
-    $analysis_repo_url = "https://ghproxy.com/https://github.com/wickedll/genshin_draw_analysis.git"
-    $rating_repo_url = "https://ghproxy.com/https://github.com/wickedll/genshin_rating.git"
 }
 else
 {
@@ -173,9 +175,6 @@ else
     $git = "https://github.com/git-for-windows/git/releases/download/v2.35.1.windows.2/Git-2.35.1.2-64-bit.exe"
     $redis = "https://github.com/microsoftarchive/redis/releases/download/win-3.0.504/Redis-x64-3.0.504.zip"
     $adachi_bot_repo_url = "https://github.com/SilveryStar/Adachi-BOT.git"
-    $music_repo_url = "https://github.com/SilveryStar/Adachi-Plugin.git"
-    $analysis_repo_url = "https://github.com/wickedll/genshin_draw_analysis.git"
-    $rating_repo_url = "https://github.com/wickedll/genshin_rating.git"
 }
 
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
