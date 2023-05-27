@@ -251,6 +251,7 @@ foreach ($item in $plugins)
     Write-Output $( "$i) " + $item.en_name )
     $i++
 }
+$len = $i + 1
 
 $use_plugins = ""
 while ($true)
@@ -284,7 +285,7 @@ while ($true)
     if ($user_in.Contains(' ')) {
         $arr = $user_in.Split(' ')
         foreach ($word in $arr) {
-            if ([int]$word -gt [int]$i)
+            if ([int]$word -gt [int]$len)
             {
                 Write-Output "不存在${word}号插件."
                 continue
@@ -306,7 +307,7 @@ while ($true)
         break
     }
 
-    if ([int]$user_in -gt [int]$i)
+    if ([int]$user_in -gt [int]$len)
     {
         Write-Output "不存在${user_in}号插件，如果你要一次多选请用空格隔开."
         continue
@@ -346,6 +347,7 @@ while ($loop)
     Write-Output "3）安卓手表"
     Write-Output "4）MacOS"
     Write-Output "5）iPad"
+    Write-Output "6）安卓8.8.88"
     $user_in = Read-Host "请输入编号"
     Switch ($user_in)
     {
@@ -363,6 +365,9 @@ while ($loop)
         }
         5 {
             $platform = 5
+        }
+        6 {
+            $platform = 6
         }
         Default {
             Write-Output "你输入的编号非法,请重新输入!"
@@ -402,9 +407,17 @@ while ($loop)
     }
 }
 $master_num = Read-Host "请输入机器人主人的QQ号"
-Write-Output '获取米游社cookie方式:
-将下面的代码复制并添加到一个书签中，书签名称自定义。然后在已登录的米游社网页中点击刚才的书签即可将cookie复制到剪切板中.
-javascript:(function () {let domain = document.domain;let cookie = document.cookie;const text = document.createElement("textarea");text.hidden=true;text.value = cookie;document.body.appendChild(text);text.select();text.setSelectionRange(0, 99999);navigator.clipboard.writeText(text.value).then(()=>{alert("domain:"+domain+"\ncookie is in clipboard");});document.body.removeChild(text);})();'
+Write-Output '获取米游社cookie方式一:
+  1) 无痕模式打开 https://www.miyoushe.com/ys/ 页面
+  2) F12打开网页控制台，按下Ctrl+F8(⌘+F8)后再按F8即可解除暂停
+  3) 在Network(网络)栏，在Filter(过滤)里粘贴 getUserGameUnreadCount，同时选择Fetch/XHR
+  4) 点击一条捕获到的结果，往下拉，找到Cookie后复制其内容即可。\n\n'
+
+Write-Output "获取米游社cookie方式二:
+  1) 无痕模式打开 https://user.mihoyo.com/ 并进行登入操作
+  2) 同方式一中的第二步解除暂停
+  3) 在Console(控制台)栏输入 copy(document.cookie) 后回车即可将Cookie复制在剪切板中。\n\n"
+
 $mys_cookie = Read-Host "请输入一个米游社cookie: "
 
 
@@ -437,10 +450,11 @@ groupIntervalTime: 1500
 privateIntervalTime: 2000
 helpMessageStyle: message
 logLevel: info
+logKeepDays: 30
 dbPort: ${redis_port}
 dbPassword: `"`"
 webConsole:
-  enable: false
+  enable: true
   consolePort: ${console_port}
   tcpLoggerPort: ${logger_port}
   jwtSecret: ${jwt_secret}
@@ -488,13 +502,13 @@ else
 {
     npm i
     npm i pm2 -g
-    Write-Output "\t<============================服务已经在启动中了...,以下是BOT服务的日志内容(CTRL+C结束查看日志,初次使用未启用webConsole)======================>"
+    Write-Output "\t<============================ ↓ ↓ ↓ 服务已经在启动中了，以下是BOT服务的日志内容(CTRL+C结束查看日志) ↓ ↓ ↓ ======================>"
     npm start
     pm2 logs --lines 100
 }
 
 if ($run_with_docker_compose)
 {
-    Write-Output "\t<============================服务已经在启动中了...,以下是BOT服务的日志内容(CTRL+C结束查看日志, 初次使用未启用webConsole)======================>"
+    Write-Output "\t<============================ ↓ ↓ ↓ 服务已经在启动中了...,以下是BOT服务的日志内容(CTRL+C结束查看日志) ↓ ↓ ↓ ======================>"
     docker logs -f adachi-bot
 }

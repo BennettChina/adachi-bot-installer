@@ -8,7 +8,7 @@
 这个脚本安装，这个脚本将在物理机安装 `nodejs`、`redis`、`chrome`等
 
 ```sh
-wget https://ghproxy.com/https://raw.githubusercontent.com/BennettChina/adachi-bot-installer/main/unix-docker-install.sh -O unix-docker-install.sh && sudo bash unix-docker-install.sh && rm unix-docker-install.sh
+sudo bash <(curl -L -# https://ghproxy.com/https://raw.githubusercontent.com/BennettChina/adachi-bot-installer/main/unix-docker-install.sh)
 ```
 
 ## macOS
@@ -18,7 +18,7 @@ wget https://ghproxy.com/https://raw.githubusercontent.com/BennettChina/adachi-b
 `macOS`如果用Docker模式需要自行安装`docker`(最好是比较新的版本，因为自带了`docker-compose`)，[docker下载地址](https://www.docker.com/get-started) 。
 
 ```shell
-curl -L -# https://ghproxy.com/https://raw.githubusercontent.com/BennettChina/adachi-bot-installer/main/unix-docker-install.sh -o unix-docker-install.sh && bash unix-docker-install.sh && rm unix-docker-install.sh
+bash <(curl -L -# https://ghproxy.com/https://raw.githubusercontent.com/BennettChina/adachi-bot-installer/main/unix-docker-install.sh)
 ```
 
 ### 非 Docker 模式安装
@@ -26,7 +26,7 @@ curl -L -# https://ghproxy.com/https://raw.githubusercontent.com/BennettChina/ad
 不使用Docker模式可以使用下面的命令安装
 
 ```shell
-curl -L -# https://ghproxy.com/https://raw.githubusercontent.com/BennettChina/adachi-bot-installer/main/macos-install.sh -o macos-install.sh && bash macos-install.sh && rm macos-install.sh
+bash <(curl -L -# https://ghproxy.com/https://raw.githubusercontent.com/BennettChina/adachi-bot-installer/main/macos-install.sh)
 ```
 
 这种方式不是很推荐，因为会给你安装好几个软件(`xcode-select`, `homebrew`,`nodejs`,`redis`, `Adachi-BOT`)，容易给你的环境搞乱。
