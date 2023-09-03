@@ -317,6 +317,9 @@ echo -e "${CYAN}获取米游社cookie方式二:${RESET}
 echo -n -e "${GREEN}请输入一个米游社cookie: ${RESET}"
 read -r mys_cookie
 
+echo -n -e "${GREEN}请输入你要用的签名API服务地址: ${RESET}"
+read -r sign_api_addr
+
 jwt_secret=$(LC_ALL=C tr -dc "[:alnum:]" </dev/urandom | head -c 16)
 
 echo "tip: 前往 https://docs.adachi.top/config 查看配置详情
@@ -366,14 +369,16 @@ banHeavyAt:
   prompt: true
   promptMsg: 你at太多人了，会被讨厌的哦~
 ThresholdInterval: false
-ffmpegPath: \"\"
-ffprobePath: \"\"
+ffmpegPath: ffmpeg
+ffprobePath: ffprobe
 mailConfig:
   platform: qq
   user: 123456789@qq.com
   authCode: \"\"
   logoutSend: false
-  sendDelay: 5" >"${work_dir}/config/setting.yml"
+  sendDelay: 5
+signApiAddr: ${sign_api_addr}
+ver: \"\"" >"${work_dir}/config/setting.yml"
 
 echo "cookies:
   - ${mys_cookie}" >"${work_dir}/config/cookies.yml"

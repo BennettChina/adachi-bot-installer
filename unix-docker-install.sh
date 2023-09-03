@@ -79,11 +79,10 @@ else
     mkdir -p "/etc/docker" && touch "/etc/docker/daemon.json"
     echo '{
     "registry-mirrors" : [
-      "https://ajxzc7hl.mirror.aliyuncs.com",
-      "https://registry.docker-cn.com",
+      "https://mirror.ccs.tencentyun.com",
       "http://docker.mirrors.ustc.edu.cn",
       "http://hub-mirror.c.163.com",
-      "https://mirror.ccs.tencentyun.com"
+      "https://registry.docker-cn.com"
     ],
     "debug" : false,
     "experimental" : true
@@ -437,14 +436,16 @@ banHeavyAt:
   prompt: true
   promptMsg: 你at太多人了，会被讨厌的哦~
 ThresholdInterval: false
-ffmpegPath: \"\"
-ffprobePath: \"\"
+ffmpegPath: ffmpeg
+ffprobePath: ffprobe
 mailConfig:
   platform: qq
   user: 123456789@qq.com
   authCode: \"\"
   logoutSend: false
-  sendDelay: 5" >"${work_dir}/Adachi-BOT/config/setting.yml"
+  sendDelay: 5
+signApiAddr: http://qsign/sign?key=114514
+ver: \"\"" >"${work_dir}/Adachi-BOT/config/setting.yml"
 
 echo "cookies:
   - ${mys_cookie}" >"${work_dir}/Adachi-BOT/config/cookies.yml"

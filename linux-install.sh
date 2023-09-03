@@ -341,6 +341,9 @@ read -r mys_cookie
 
 jwt_secret="$(tr -dc 'a-zA-Z0-9' </dev/urandom | fold -w 16 | head -n 1)"
 
+echo -n -e "${GREEN}请输入你要用的签名API服务地址: ${RESET}"
+read -r sign_api_addr
+
 echo "tip: 前往 https://docs.adachi.top/config 查看配置详情
 qrcode: ${qrcode}
 number: ${qq_num}
@@ -388,14 +391,16 @@ banHeavyAt:
   prompt: true
   promptMsg: 你at太多人了，会被讨厌的哦~
 ThresholdInterval: false
-ffmpegPath: \"\"
-ffprobePath: \"\"
+ffmpegPath: ffmpeg
+ffprobePath: ffprobe
 mailConfig:
   platform: qq
   user: 123456789@qq.com
   authCode: \"\"
   logoutSend: false
-  sendDelay: 5" >"${work_dir}/config/setting.yml"
+  sendDelay: 5
+signApiAddr: ${sign_api_addr}
+ver: \"\"" >"${work_dir}/config/setting.yml"
 
 echo "cookies:
   - ${mys_cookie}" >"${work_dir}/config/cookies.yml"

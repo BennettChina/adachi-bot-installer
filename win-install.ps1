@@ -418,14 +418,17 @@ Write-Output "获取米游社cookie方式二:
   2) 同方式一中的第二步解除暂停
   3) 在Console(控制台)栏输入 copy(document.cookie) 后回车即可将Cookie复制在剪切板中。\n\n"
 
-$mys_cookie = Read-Host "请输入一个米游社cookie: "
+$mys_cookie = Read-Host "请输入一个米游社cookie"
 
+$sign_api_addr = "http://qsign/sign?key=114514"
 
 if (!($run_with_docker_compose))
 {
     $redis_port = 6379
     $logger_port = 4921
     $genshin_port = 8612
+
+    $sign_api_addr = Read-Host "请输入你要用的签名API服务地址"
 }
 
 
@@ -476,14 +479,16 @@ banHeavyAt:
   prompt: true
   promptMsg: 你at太多人了，会被讨厌的哦~
 ThresholdInterval: false
-ffmpegPath: `"`"
-ffprobePath: `"`"
+ffmpegPath: ffmpeg
+ffprobePath: ffprobe
 mailConfig:
   platform: qq
   user: 123456789@qq.com
   authCode: `"`"
   logoutSend: false
   sendDelay: 5
+signApiAddr: ${sign_api_addr}
+ver: `"`"
 "
 
 New-Item -Path .\config\cookies.yml -ItemType File -Force -Value "cookies:
