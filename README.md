@@ -1,10 +1,15 @@
 # adachi-bot-installer
 
-[SilveryStar/Adachi-BOT](https://github.com/SilveryStar/Adachi-BOT)的一键部署脚本
+[SilveryStar/Adachi-BOT](https://github.com/SilveryStar/Adachi-BOT)
+的一键部署脚本，不包含签名服务的部署（只有Docker模式会使用项目的 `docker-compose.yml` 自动启动签名服务。），所以部署前如果不用
+Docker 需要自行先部署一套签名服务。
+
+指路👉[unidbg-fetch-qsign/wiki](https://github.com/fuqiuluo/unidbg-fetch-qsign/wiki)
 
 ## Linux
 
-`Linux`环境可以直接执行下面的命令，将通过安装`Docker`、`docker-compose`的方式运行BOT。不想使用 `Docker` 启动的方式可以使用 [安装BOT的脚本](#安装BOT的脚本)
+`Linux`环境可以直接执行下面的命令，将通过安装`Docker`、`docker-compose`的方式运行BOT。不想使用 `Docker`
+启动的方式可以使用 [安装BOT的脚本](#安装BOT的脚本)
 这个脚本安装，这个脚本将在物理机安装 `nodejs`、`redis`、`chrome`等
 
 ```sh
@@ -15,7 +20,8 @@ sudo bash <(curl -L -# https://ghproxy.com/https://raw.githubusercontent.com/Ben
 
 ### Docker 模式安装（推荐）
 
-`macOS`如果用Docker模式需要自行安装`docker`(最好是比较新的版本，因为自带了`docker-compose`)，[docker下载地址](https://www.docker.com/get-started) 。
+`macOS`如果用Docker模式需要自行安装`docker`(
+最好是比较新的版本，因为自带了`docker-compose`)，[docker下载地址](https://www.docker.com/get-started) 。
 
 ```shell
 bash <(curl -L -# https://ghproxy.com/https://raw.githubusercontent.com/BennettChina/adachi-bot-installer/main/unix-docker-install.sh)
@@ -50,7 +56,8 @@ iwr "https://ghproxy.com/https://raw.githubusercontent.com/BennettChina/adachi-b
 ## Android
 
 使用 `termux` [App](https://github.com/termux/termux-app) 来安装(可以通过 `F-Droid`
-来[下载](https://f-droid.org/en/packages/com.termux/) 安装)，参考[云崽BOT](https://github.com/Le-niao/Yunzai-Bot) 的安卓安装方式。
+来[下载](https://f-droid.org/en/packages/com.termux/) 安装)，参考[云崽BOT](https://github.com/Le-niao/Yunzai-Bot)
+的安卓安装方式。
 
 下载完 `termux` 后执行 `pkg install proot git python -y`
 
@@ -74,7 +81,8 @@ cd ~/Termux-Linux/Ubuntu
 
 ### 安装BOT的脚本
 
-启动系统后再执行下面的命令(脚本暂时只支持 `Ubuntu`、`Debian`、`Centos`，除已选择的配置其他均使用的都是官方的默认配置，可根据 [官方文档](https://docs.adachi.top/config/)
+启动系统后再执行下面的命令(脚本暂时只支持 `Ubuntu`、`Debian`、`Centos`
+，除已选择的配置其他均使用的都是官方的默认配置，可根据 [官方文档](https://docs.adachi.top/config/)
 自定义配置)
 
 ```shell
